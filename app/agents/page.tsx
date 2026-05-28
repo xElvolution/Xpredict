@@ -202,7 +202,7 @@ function describe(role: string): string {
     case 'Resolver':
       return 'Cross-references three independent data sources after each event closes. Posts an attestation that requires 2-of-3 source consensus before settling the contract.';
     case 'Coach':
-      return 'Conversational agent that shares head-to-head stats, form, and historical context but never directs your prediction. Built on the same Claude API powering the platform.';
+      return 'Conversational agent that shares head-to-head stats, form, and historical context but never directs your prediction.';
     default:
       return '';
   }

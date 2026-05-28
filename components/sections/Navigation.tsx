@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Menu, X, Plus } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -33,7 +34,7 @@ export function Navigation() {
     <nav className={clsx('nav', scrolled && 'nav-scrolled')}>
       <div className="nav-inner">
         <Link href="/" className="row gap-2" aria-label="XPredict home">
-          <Logo />
+          <Image src="/logo.png" alt="XPredict" width={26} height={26} style={{ borderRadius: 6 }} />
           <span style={{ fontWeight: 700, letterSpacing: '-0.02em', fontSize: 16 }}>
             XPredict
           </span>
@@ -109,21 +110,5 @@ export function Navigation() {
         }
       `}</style>
     </nav>
-  );
-}
-
-function Logo() {
-  return (
-    <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden>
-      <defs>
-        <linearGradient id="nlg" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#8B5CF6" />
-          <stop offset="1" stopColor="#7C3AED" />
-        </linearGradient>
-      </defs>
-      <rect width="32" height="32" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.10)" />
-      <path d="M9 9 L16 17 L23 9" stroke="url(#nlg)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-      <path d="M9 17 L16 25 L23 17" stroke="#FFFFFF" strokeOpacity="0.95" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-    </svg>
   );
 }
