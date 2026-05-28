@@ -1,0 +1,167 @@
+CRITICAL UI REQUIREMENTS — READ BEFORE WRITING ANY CODE
+
+You are building a premium, production-grade UI.
+The standard is Vercel, Linear, Lando Norris site,
+World Labs, and Delphi AI — not a tutorial project.
+
+MANDATORY DESIGN PRINCIPLES:
+
+1. HERO SECTION
+— Full viewport height
+— One bold statement headline, max 8 words
+— Subtle animated background (particles, 
+  gradient mesh, or noise texture)
+— NO generic stock illustration
+— Large white text on dark background
+— One primary CTA button, one ghost button
+— Headline uses clamp() for fluid typography:
+  font-size: clamp(2.5rem, 6vw, 5rem)
+
+2. COLOR SYSTEM
+— Background: #0A0A0F (not pure black)
+— Surface: #111118
+— Card: #16161F with border: 1px solid #ffffff12
+— Primary: one bold accent color ONLY
+  (green #00FF87 for DeFi/payments,
+   purple #7C3AED for AI,
+   blue #3B82F6 for data/infra)
+— Muted text: #6B7280
+— NEVER use more than 2 accent colors
+
+3. TYPOGRAPHY
+— Font: Inter or Geist (import from Google Fonts)
+— Headings: font-weight 700, letter-spacing -0.02em
+— Body: font-weight 400, line-height 1.6
+— Monospace for addresses/hashes: font-family: 'JetBrains Mono'
+— Use fluid type scale with clamp()
+
+4. SPACING SYSTEM
+— Use 4px base unit (4, 8, 12, 16, 24, 32, 48, 64, 96px)
+— Section padding: padding: 96px 0
+— Container max-width: 1200px, margin: 0 auto
+— Card padding: 24px
+— Never use random pixel values
+
+5. COMPONENTS
+
+Buttons:
+— Primary: bg accent, text black, 
+  border-radius 8px, padding 12px 24px,
+  font-weight 600, transition all 0.2s
+— Ghost: bg transparent, border 1px solid #ffffff20,
+  text white, same padding
+— Hover: primary scales 1.02, ghost border brightens
+— NEVER use default browser button styles
+
+Cards:
+— bg #16161F, border 1px solid #ffffff12
+— border-radius 12px, padding 24px
+— backdrop-filter: blur(8px) on glass variants
+— Hover: border-color #ffffff24, 
+  box-shadow 0 0 24px rgba(accent, 0.1)
+— Smooth transition: all 0.2s ease
+
+Navigation:
+— Fixed top, backdrop-blur background on scroll
+— Logo left, links center, CTA right
+— No underlines on links
+— Active state: accent color text
+
+Tables:
+— Dark striped rows (#111118 alternating)
+— Sticky header
+— Monospace for numbers
+— Color-coded status badges
+
+Badges/Tags:
+— Small, rounded-full
+— bg accent/10, text accent, 
+  border 1px solid accent/20
+— Never use flat colored boxes
+
+6. ANIMATIONS (use sparingly, purposefully)
+
+GSAP (if included):
+— Text: SplitText char-by-char stagger 0.02s
+— Numbers: CountTo from 0 on scroll entry
+— Sections: fadeUp with y:30 on ScrollTrigger
+— ALL in useEffect with cleanup
+
+Framer Motion (if included):
+— Page enter: opacity 0→1, y 20→0, duration 0.4s
+— Cards: staggerChildren 0.07s
+— Modals: scale 0.95→1, opacity 0→1
+— Define ALL variants OUTSIDE components
+
+CSS transitions:
+— Default: all 0.2s ease
+— Never use transition: all with transforms
+  (specify: transform 0.2s ease, opacity 0.2s ease)
+
+7. LAYOUT PATTERNS
+
+Dashboard:
+— Sidebar 240px fixed left (dark, bordered right)
+— Main content area with top padding
+— Stat cards in 2 or 3 column grid
+— Table below stats
+
+Landing page sections in order:
+1. Hero (full viewport)
+2. Logo bar / social proof
+3. How it works (3 steps)
+4. Features (alternating or grid)
+5. Stats (dark band)
+6. CTA (centered, full width band)
+7. Footer
+
+Live feed:
+— Dark terminal aesthetic
+— Monospace font for data
+— Items slide in from right (Framer AnimatePresence)
+— Max 50 items, oldest fade out top
+— Color-coded left border per event type
+
+8. RESPONSIVENESS
+— Mobile-first CSS
+— Breakpoints: 640px, 768px, 1024px, 1280px
+— Navigation collapses to hamburger at 768px
+— Cards stack to single column at 640px
+— Hero text scales down with clamp()
+— Touch targets minimum 44px
+
+9. THINGS TO NEVER DO
+— Never use Tailwind's default blue (#3B82F6) 
+  as the only color
+— Never use rounded-lg on everything uniformly
+— Never use justify-between for everything
+— Never use Lorem Ipsum
+— Never show empty states without illustration
+— Never use border-radius > 16px on large cards
+— Never use font-size < 14px for body text
+— Never use pure white (#FFFFFF) backgrounds
+— Never use flat design with no depth
+— Never build without hover states
+— Never skip loading skeletons
+— Never use more than 3 font sizes per page section
+
+10. QUALITY CHECK BEFORE FINISHING
+□ Does the hero make someone stop scrolling?
+□ Is there exactly ONE primary action per page?
+□ Are all numbers formatted (1,000 not 1000)?
+□ Do all cards have hover states?
+□ Is the mobile view tested at 375px?
+□ Are loading states implemented?
+□ Are empty states designed?
+□ Is the color contrast ratio > 4.5:1?
+□ Are all animations < 400ms duration?
+□ Does it look like a $50K agency built it?
+
+Reference aesthetic:
+— Linear.app (clean, dark, precise)
+— Vercel.com (minimal, powerful, fast)
+— Lando Norris site (bold, dynamic, premium)
+— Delphi AI (dark, trustworthy, data-forward)
+
+If your output does not match this standard,
+rebuild it. Do not ship mediocre UI.
