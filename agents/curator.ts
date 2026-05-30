@@ -13,6 +13,8 @@
 
 import 'dotenv/config';
 import { parseUnits } from 'viem';
+import { ensureSchema } from '../lib/db';
+import { ensureSdkSchema } from '../lib/sdk/db';
 import { tavilySearch } from './lib/tavily';
 import { chat } from './lib/openai';
 import { sendTransaction, getAgentWallet } from './lib/privy';
@@ -21,6 +23,7 @@ import {
   publicClient, getFactoryMarkets
 } from './lib/chain';
 import { logAgentAction, upsertMarketMeta } from './lib/db';
+import { processPendingProposals } from './lib/proposals';
 import { USDC_DECIMALS } from '../lib/contracts';
 
 const FACTORY   = process.env.NEXT_PUBLIC_FACTORY_ADDRESS as `0x${string}`;
@@ -54,7 +57,14 @@ Respond ONLY with valid JSON, no markdown.`;
 async function run() {
   console.log(`[curator] Starting at ${new Date().toISOString()}`);
 
-  // Pick a random search query to vary market types
+  await ensureSchema();
+  await ensureSdkSchema();
+
+  // 1. Process SDK proposal queue first
+  const reviewed = await processPendingProposals();
+  console.log(`[curator] Processed ${reviewed} SDK proposal(s)`);
+
+  // 2. Auto-draft one market from live feeds
   const query = SEARCH_QUERIES[Math.floor(Math.random() * SEARCH_QUERIES.length)];
   console.log(`[curator] Searching: ${query}`);
 

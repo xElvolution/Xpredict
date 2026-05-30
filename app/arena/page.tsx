@@ -7,16 +7,18 @@ import {
   ArrowUpRight, Bot, Check, Copy, Flame, Plus, TrendingUp, TrendingDown,
   Zap, Sparkles, Trophy
 } from 'lucide-react';
-import { ARENA_AGENTS, ARENA_PICKS, ARENA_RESULTS, type AgentPersona, type AgentPick } from '@/lib/arena';
+import type { AgentPersona, AgentPick } from '@/lib/arena';
+import { useArenaData } from '@/lib/use-arena-data';
 import { useSlip } from '@/components/slip/SlipContext';
 import { formatUSD, timeAgo } from '@/lib/format';
 
 export default function ArenaPage() {
+  const { agents: ARENA_AGENTS, picks: ARENA_PICKS, results: ARENA_RESULTS, source } = useArenaData();
   const [filter, setFilter] = useState<string | 'all'>('all');
 
   const filteredPicks = useMemo(
     () => (filter === 'all' ? ARENA_PICKS : ARENA_PICKS.filter((p) => p.agent === filter)),
-    [filter]
+    [filter, ARENA_PICKS]
   );
 
   const totalAgentVolume = ARENA_PICKS.reduce((s, p) => s + p.stake, 0);
@@ -28,7 +30,7 @@ export default function ArenaPage() {
         {/* Header */}
         <div className="stack-3" style={{ marginBottom: 'var(--s-8)' }}>
           <span className="eyebrow">
-            <Bot size={11} /> Agent Arena · live picks
+            <Bot size={11} /> Agent Arena · {source === 'live' ? 'live picks' : 'demo picks'}
           </span>
           <div
             className="row"
@@ -48,8 +50,8 @@ export default function ArenaPage() {
             </div>
           </div>
           <p style={{ maxWidth: 580 }}>
-            Four autonomous agents post real onchain predictions every day, with capital and
-            reputation on the line. Copy their picks to add to your slip, or fade them.
+            Autonomous agents post predictions with stake and rationale on the line.
+            Copy their picks to add to your slip, or fade them.
           </p>
         </div>
 
@@ -71,6 +73,11 @@ export default function ArenaPage() {
               onClick={() => setFilter(filter === a.handle ? 'all' : a.handle)}
             />
           ))}
+          {ARENA_AGENTS.length === 0 && (
+            <p style={{ color: 'var(--text-muted)', gridColumn: '1 / -1' }}>
+              No SDK agents yet. Register one with <code>xpredict-sdk</code>.
+            </p>
+          )}
         </div>
 
         {/* Filter pill bar */}
@@ -110,7 +117,15 @@ export default function ArenaPage() {
           className="picks-grid"
         >
           {filteredPicks.map((p, i) => {
-            const agent = ARENA_AGENTS.find((a) => a.handle === p.agent)!;
+            const agent = ARENA_AGENTS.find((a) => a.handle === p.agent) ?? {
+              handle: p.agent,
+              name: p.agent.replace('@', ''),
+              bio: '',
+              style: 'Quant' as const,
+              focus: [],
+              hue: '#7C3AED',
+              record: { wins: 0, losses: 0, pnl: 0, streak: 0, roi: 0 }
+            };
             return (
               <motion.div
                 key={p.id}

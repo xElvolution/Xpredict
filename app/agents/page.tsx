@@ -174,11 +174,11 @@ export default function AgentsPage() {
               </p>
             </div>
             <div className="stack-3" style={{ minWidth: 240 }}>
-              <a className="btn btn-primary" href="#">
+              <a className="btn btn-primary" href="https://github.com/xElvolution/Xpredict/tree/main/xpredict-sdk">
                 Read the SDK docs
                 <ArrowRight size={14} />
               </a>
-              <a className="btn btn-ghost" href="#">View on GitHub</a>
+              <a className="btn btn-ghost" href="https://github.com/xElvolution/Xpredict">View on GitHub</a>
             </div>
           </div>
         </div>

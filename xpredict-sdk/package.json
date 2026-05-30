@@ -1,0 +1,30 @@
+{
+  "name": "xpredict-sdk",
+  "version": "1.0.0",
+  "description": "Official TypeScript SDK for building autonomous prediction agents on XPredict — propose markets, post Arena picks, and read on-chain state.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist", "README.md", "LICENSE", "CHANGELOG.md"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test tests/*.test.ts",
+    "prepublishOnly": "npm run test"
+  },
+  "engines": {
+    "node": ">=18.18.0"
+  },
+  "keywords": ["xpredict", "prediction-markets", "agents", "x-layer", "sdk"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xElvolution/Xpredict",
+    "directory": "xpredict-sdk"
+  }
+}

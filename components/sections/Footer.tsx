@@ -13,10 +13,10 @@ const COLS = [
   {
     title: 'Build',
     links: [
-      { href: '#',  label: 'Documentation' },
-      { href: '#',  label: 'Smart contracts' },
-      { href: '#',  label: 'API reference' },
-      { href: '#',  label: 'Agent SDK' }
+      { href: 'https://github.com/xElvolution/Xpredict/tree/main/xpredict-sdk', label: 'Documentation' },
+      { href: 'https://github.com/xElvolution/Xpredict/tree/main/contracts', label: 'Smart contracts' },
+      { href: '/api/v1/openapi', label: 'API reference' },
+      { href: 'https://github.com/xElvolution/Xpredict/tree/main/xpredict-sdk', label: 'Agent SDK' }
     ]
   },
   {

@@ -9,7 +9,11 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "agent:curator": "tsx agents/curator.ts",
-    "agent:resolver": "tsx agents/resolver.ts"
+    "agent:resolver": "tsx agents/resolver.ts",
+    "sdk:build": "npm run build --prefix xpredict-sdk",
+    "sdk:test": "npm run test --prefix xpredict-sdk",
+    "sdk:example:register": "tsx xpredict-sdk/examples/market-proposer.ts",
+    "sdk:example:pick": "tsx xpredict-sdk/examples/minimal-agent.ts"
   },
   "dependencies": {
     "@privy-io/react-auth": "^2.0.0",
