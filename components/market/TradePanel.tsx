@@ -6,7 +6,7 @@ import { parseUnits } from 'viem';
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { usePrivy } from '@privy-io/react-auth';
 import { useSlip } from '@/components/slip/SlipContext';
-import { ADDRESSES, ERC20_ABI, PREDICTION_MARKET_ABI, USDC_DECIMALS } from '@/lib/contracts';
+import { ADDRESSES, ERC20_ABI, FAUCET_ABI, PREDICTION_MARKET_ABI, USDC_DECIMALS } from '@/lib/contracts';
 
 export function TradePanel({
   yesPct,
@@ -58,7 +58,24 @@ export function TradePanel({
 
   const { writeContractAsync: approveWrite, isPending: approving } = useWriteContract();
   const { writeContractAsync: buyWrite, isPending: buying } = useWriteContract();
-  const { writeContractAsync: mintWrite, isPending: minting } = useWriteContract();
+  const { writeContractAsync: claimWrite, isPending: claiming } = useWriteContract();
+
+  // Faucet eligibility
+  const { data: canClaimFromFaucet, refetch: refetchCanClaim } = useReadContract({
+    address: ADDRESSES.FAUCET,
+    abi: FAUCET_ABI,
+    functionName: 'canClaim',
+    args: address ? [address] : undefined,
+    query: { enabled: !!address }
+  });
+
+  const { data: hasClaimedFaucet } = useReadContract({
+    address: ADDRESSES.FAUCET,
+    abi: FAUCET_ABI,
+    functionName: 'hasClaimed',
+    args: address ? [address] : undefined,
+    query: { enabled: !!address }
+  });
 
   const [txHash, setTxHash] = useState<`0x${string}` | undefined>();
   const { isLoading: confirming, isSuccess: confirmed } = useWaitForTransactionReceipt({
@@ -118,16 +135,20 @@ export function TradePanel({
   const handleMint = async () => {
     setError('');
     if (!address) { login(); return; }
+    if (hasClaimedFaucet) {
+      setError('Already claimed from faucet. Ask in Discord for more.');
+      return;
+    }
     try {
-      const hash = await mintWrite({
-        address: ADDRESSES.USDC,
-        abi: ERC20_ABI,
-        functionName: 'mint',
-        args: [address, parseUnits('1000', USDC_DECIMALS)]
+      const hash = await claimWrite({
+        address: ADDRESSES.FAUCET,
+        abi: FAUCET_ABI,
+        functionName: 'claim'
       });
       setTxHash(hash);
+      await refetchCanClaim();
     } catch (err: any) {
-      setError(err?.shortMessage ?? err?.message ?? 'Mint failed');
+      setError(err?.shortMessage ?? err?.message ?? 'Claim failed');
     }
   };
 
@@ -311,9 +332,13 @@ export function TradePanel({
             className="btn btn-ghost btn-sm"
             style={{ width: '100%' }}
             onClick={handleMint}
-            disabled={minting}
+            disabled={claiming || !canClaimFromFaucet}
           >
-            {minting ? 'Minting...' : 'Mint 1,000 test USDC'}
+            {claiming
+              ? 'Claiming...'
+              : hasClaimedFaucet
+              ? 'Already claimed · ask in Discord for more'
+              : 'Claim 10,000 test USDC from Faucet'}
           </button>
         )}
 

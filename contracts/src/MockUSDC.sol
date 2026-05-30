@@ -4,7 +4,9 @@ pragma solidity ^0.8.24;
 import {IERC20} from "./interfaces/IERC20.sol";
 
 /// @title Mock USDC for X Layer Testnet
-/// @notice ERC-20 with public mint(). Use ONLY on testnet for demos.
+/// @notice Owner-mintable ERC-20. Users do NOT mint directly — they claim from the Faucet
+///         contract, or the owner airdrops on demand (e.g. via Discord).
+/// @dev Total supply is bounded only by what the owner mints. Decimals = 6 to match real USDC.
 contract MockUSDC is IERC20 {
     string  public constant name     = "Mock USD Coin";
     string  public constant symbol   = "mUSDC";
@@ -14,15 +16,35 @@ contract MockUSDC is IERC20 {
     mapping(address => uint256) public override balanceOf;
     mapping(address => mapping(address => uint256)) public override allowance;
 
-    /// Anyone can mint test USDC for themselves. Cap per call to discourage abuse.
-    uint256 public constant MINT_CAP = 100_000 * 1e6; // 100,000 mUSDC per call
+    address public owner;
 
-    function mint(address to, uint256 amount) external returns (bool) {
-        require(amount <= MINT_CAP, "mint cap exceeded");
+    event OwnerTransferred(address indexed previous, address indexed next);
+
+    error NotOwner();
+
+    modifier onlyOwner() {
+        if (msg.sender != owner) revert NotOwner();
+        _;
+    }
+
+    constructor() {
+        owner = msg.sender;
+        emit OwnerTransferred(address(0), msg.sender);
+    }
+
+    /// @notice Mint mUSDC to any address. Owner only.
+    function mint(address to, uint256 amount) external onlyOwner returns (bool) {
         totalSupply += amount;
         balanceOf[to] += amount;
         emit Transfer(address(0), to, amount);
         return true;
+    }
+
+    /// @notice Transfer ownership (e.g. to a multisig or burn address later).
+    function transferOwnership(address next) external onlyOwner {
+        require(next != address(0), "zero addr");
+        emit OwnerTransferred(owner, next);
+        owner = next;
     }
 
     function transfer(address to, uint256 amount) external override returns (bool) {

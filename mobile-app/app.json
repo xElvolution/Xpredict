@@ -14,19 +14,29 @@
       "backgroundColor": "#0A0A0F"
     },
     "assetBundlePatterns": ["**/*"],
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "app.xpredict.mobile",
-      "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
-      }
-    },
     "android": {
       "package": "app.xpredict.mobile",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#0A0A0F"
-      }
+      },
+      "permissions": ["INTERNET"],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": [{ "scheme": "xpredict" }],
+          "category": ["BROWSABLE", "DEFAULT"]
+        },
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            { "scheme": "https", "host": "xpredict-nu.vercel.app", "pathPrefix": "/" }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -35,7 +45,15 @@
     "plugins": [
       "expo-router",
       "expo-font",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0A0A0F",
+          "image": "./assets/images/splash.png",
+          "imageWidth": 240
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

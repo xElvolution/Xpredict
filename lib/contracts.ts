@@ -5,7 +5,8 @@
 
 export const ADDRESSES = {
   USDC:    (process.env.NEXT_PUBLIC_USDC_ADDRESS    || '0x0000000000000000000000000000000000000000') as `0x${string}`,
-  FACTORY: (process.env.NEXT_PUBLIC_FACTORY_ADDRESS || '0x0000000000000000000000000000000000000000') as `0x${string}`
+  FACTORY: (process.env.NEXT_PUBLIC_FACTORY_ADDRESS || '0x0000000000000000000000000000000000000000') as `0x${string}`,
+  FAUCET:  (process.env.NEXT_PUBLIC_FAUCET_ADDRESS  || '0x0000000000000000000000000000000000000000') as `0x${string}`
 } as const;
 
 export const PREDICTION_MARKET_ABI = [
@@ -113,9 +114,31 @@ export const ERC20_ABI = [
   { type: 'function', name: 'approve',     stateMutability: 'nonpayable',
     inputs: [{ type: 'address' }, { type: 'uint256' }], outputs: [{ type: 'bool' }] },
   { type: 'function', name: 'decimals',    stateMutability: 'view',
-    inputs: [], outputs: [{ type: 'uint8' }] },
-  { type: 'function', name: 'mint',        stateMutability: 'nonpayable',
-    inputs: [{ type: 'address' }, { type: 'uint256' }], outputs: [{ type: 'bool' }] }
+    inputs: [], outputs: [{ type: 'uint8' }] }
+] as const;
+
+export const FAUCET_ABI = [
+  { type: 'function', name: 'claim',        stateMutability: 'nonpayable',
+    inputs: [], outputs: [] },
+  { type: 'function', name: 'canClaim',     stateMutability: 'view',
+    inputs: [{ type: 'address' }], outputs: [{ type: 'bool' }] },
+  { type: 'function', name: 'hasClaimed',   stateMutability: 'view',
+    inputs: [{ type: 'address' }], outputs: [{ type: 'bool' }] },
+  { type: 'function', name: 'claimAmount',  stateMutability: 'view',
+    inputs: [], outputs: [{ type: 'uint256' }] },
+  { type: 'function', name: 'faucetBalance',stateMutability: 'view',
+    inputs: [], outputs: [{ type: 'uint256' }] },
+  { type: 'function', name: 'totalClaimed', stateMutability: 'view',
+    inputs: [], outputs: [{ type: 'uint256' }] },
+  { type: 'function', name: 'claimsCount',  stateMutability: 'view',
+    inputs: [], outputs: [{ type: 'uint256' }] },
+
+  { type: 'event', name: 'Claimed',
+    inputs: [
+      { name: 'user',   type: 'address', indexed: true },
+      { name: 'amount', type: 'uint256', indexed: false }
+    ]
+  }
 ] as const;
 
 /** USDC has 6 decimals */
