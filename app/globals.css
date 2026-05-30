@@ -743,6 +743,40 @@ p {
   .grid-2, .grid-4 { grid-template-columns: 1fr; }
   .btn { height: 48px; }
   h1 { letter-spacing: -0.025em; }
+
+  /* Hide desktop-only chrome on phones */
+  .hide-on-mobile { display: none !important; }
+
+  /* Stack rows that were intended for desktop side-by-side layouts */
+  .row-stack-mobile { flex-direction: column !important; align-items: stretch !important; }
+
+  /* Section padding tighter on phones */
+  .section { padding: var(--s-12) 0; }
+
+  /* Tap targets: anything interactive should be at least 44px */
+  .btn-icon { min-width: 44px; min-height: 44px; }
+
+  /* Stop horizontal overflow on tables */
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  /* Slip drawer becomes a bottom sheet feel by default — already full width */
+}
+
+/* iPhone safe-area insets (notch / home indicator) */
+@supports (padding: max(0px)) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .nav, .nav-inner {
+    padding-left:  max(var(--s-4), env(safe-area-inset-left));
+    padding-right: max(var(--s-4), env(safe-area-inset-right));
+  }
+}
+
+/* iOS form input zoom prevention — must be at least 16px */
+input, textarea, select { font-size: 16px; }
+@media (min-width: 769px) {
+  input, textarea, select { font-size: 14px; }
 }
 
 /* ------------------------------------------------------------

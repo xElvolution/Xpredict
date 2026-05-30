@@ -21,7 +21,7 @@ export function SlipFab() {
       style={{
         position: 'fixed',
         right: 20,
-        bottom: 20,
+        bottom: 'max(20px, env(safe-area-inset-bottom))',
         zIndex: 80,
         padding: '12px 18px',
         background: 'var(--accent)',

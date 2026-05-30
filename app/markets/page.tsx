@@ -2,8 +2,9 @@
 
 import { useMemo, useState } from 'react';
 import { Search, SlidersHorizontal } from 'lucide-react';
-import { MARKETS, type Category } from '@/lib/data';
+import { type Category } from '@/lib/data';
 import { MarketCard } from '@/components/sections/FeaturedMarkets';
+import { useMarkets } from '@/lib/use-markets';
 
 const CATEGORIES: Array<Category | 'All'> = [
   'All', 'Football', 'Basketball', 'UFC', 'Tennis', 'Esports', 'Crypto'
@@ -15,9 +16,10 @@ export default function MarketsPage() {
   const [q, setQ] = useState('');
   const [cat, setCat] = useState<Category | 'All'>('All');
   const [sort, setSort] = useState<Sort>('volume');
+  const { markets, isLoading } = useMarkets();
 
   const filtered = useMemo(() => {
-    let list = MARKETS.slice();
+    let list = markets.slice();
     if (cat !== 'All') list = list.filter((m) => m.category === cat);
     if (q.trim()) {
       const t = q.trim().toLowerCase();
@@ -27,7 +29,7 @@ export default function MarketsPage() {
     if (sort === 'closing')  list.sort((a, b) => +new Date(a.closesAt) - +new Date(b.closesAt));
     if (sort === 'trending') list.sort((a, b) => Number(!!b.trending) - Number(!!a.trending) || b.volume - a.volume);
     return list;
-  }, [q, cat, sort]);
+  }, [markets, q, cat, sort]);
 
   return (
     <section className="section" style={{ paddingTop: 'calc(var(--nav-h) + var(--s-12))' }}>
@@ -97,7 +99,9 @@ export default function MarketsPage() {
         </div>
 
         {/* Grid */}
-        {filtered.length === 0 ? (
+        {isLoading ? (
+          <LoadingGrid />
+        ) : filtered.length === 0 ? (
           <EmptyState />
         ) : (
           <div
@@ -180,6 +184,39 @@ function EmptyState() {
         Try a different category, clear your search, or check back in a few minutes. The curator
         agent posts new markets continuously.
       </p>
+    </div>
+  );
+}
+
+function LoadingGrid() {
+  return (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+        gap: 'var(--s-6)'
+      }}
+      className="mkts-grid"
+    >
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div
+          key={i}
+          className="card"
+          style={{
+            padding: 'var(--s-5)',
+            height: 220,
+            background: 'rgba(255,255,255,0.02)',
+            animation: 'pulse 1.5s ease-in-out infinite'
+          }}
+        >
+          <div style={{ height: 14, width: '40%', background: 'rgba(255,255,255,0.06)', borderRadius: 4, marginBottom: 12 }} />
+          <div style={{ height: 20, width: '90%', background: 'rgba(255,255,255,0.06)', borderRadius: 4, marginBottom: 8 }} />
+          <div style={{ height: 20, width: '60%', background: 'rgba(255,255,255,0.06)', borderRadius: 4 }} />
+        </div>
+      ))}
+      <style>{`
+        @keyframes pulse { 0%, 100% { opacity: 1 } 50% { opacity: 0.5 } }
+      `}</style>
     </div>
   );
 }

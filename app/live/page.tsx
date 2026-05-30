@@ -1,58 +1,39 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Pause, Play } from 'lucide-react';
-import { FEED, type FeedEvent } from '@/lib/data';
 import { formatUSD, timeAgo } from '@/lib/format';
+import { useLiveEvents, type LiveEvent } from '@/lib/use-live-events';
 
-type Filter = 'all' | FeedEvent['kind'];
+type Filter = 'all' | LiveEvent['kind'];
 
 const FILTERS: { v: Filter; label: string }[] = [
   { v: 'all',     label: 'All' },
   { v: 'bet',     label: 'Bets' },
   { v: 'create',  label: 'New markets' },
-  { v: 'resolve', label: 'Settlements' },
-  { v: 'cancel',  label: 'Voids' }
+  { v: 'resolve', label: 'Settlements' }
 ];
 
-const KIND_LABEL: Record<FeedEvent['kind'], string> = {
+const KIND_LABEL: Record<LiveEvent['kind'], string> = {
   bet:     'BET',
   create:  'CREATE',
-  resolve: 'SETTLE',
-  cancel:  'VOID'
+  resolve: 'SETTLE'
 };
 
-const SAMPLES: Omit<FeedEvent, 'id' | 'at'>[] = [
-  { kind: 'bet',     who: '0x9b41…22cd', text: 'YES on Liverpool to win at home', amount: 220 },
-  { kind: 'bet',     who: '0x2210…aa01', text: 'NO on Bayern over 2.5 goals',     amount: 1_840 },
-  { kind: 'bet',     who: '0xf021…1e7e', text: 'YES on Sinner straight sets',     amount: 60 },
-  { kind: 'create',  who: '@curator.atp',     text: 'New market: Alcaraz qualifies for ATP finals' },
-  { kind: 'create',  who: '@curator.nba',     text: 'New market: Jokic triple-double tonight' },
-  { kind: 'resolve', who: '@resolver.chronos',text: 'Settled: Real def. Barcelona → YES paid' },
-  { kind: 'bet',     who: '0x4022…dd99', text: 'YES on Argentina lifts the trophy', amount: 95 },
-  { kind: 'bet',     who: '0x88c4…f1ac', text: 'NO on ETH > $4,800 June close',     amount: 2_400 },
-  { kind: 'cancel',  who: '@resolver.chronos',text: 'Voided: Wimbledon walkover, market closed' }
-];
-
 export default function LivePage() {
-  const [events, setEvents] = useState<FeedEvent[]>(FEED);
+  const liveEvents = useLiveEvents();
   const [paused, setPaused] = useState(false);
+  const [snapshot, setSnapshot] = useState<LiveEvent[]>([]);
   const [filter, setFilter] = useState<Filter>('all');
 
-  useEffect(() => {
-    if (paused) return;
-    const id = setInterval(() => {
-      const tpl = SAMPLES[Math.floor(Math.random() * SAMPLES.length)];
-      const e: FeedEvent = {
-        ...tpl,
-        id: `live_${Math.random().toString(36).slice(2, 9)}`,
-        at: new Date().toISOString()
-      };
-      setEvents((prev) => [e, ...prev].slice(0, 80));
-    }, 1800);
-    return () => clearInterval(id);
-  }, [paused]);
+  // When paused, freeze the displayed list
+  const events = paused ? snapshot : liveEvents;
+
+  const handlePauseToggle = () => {
+    if (!paused) setSnapshot(liveEvents);
+    setPaused((v) => !v);
+  };
 
   const filtered = useMemo(
     () => (filter === 'all' ? events : events.filter((e) => e.kind === filter)),
@@ -112,7 +93,7 @@ export default function LivePage() {
             })}
           </div>
           <button
-            onClick={() => setPaused((v) => !v)}
+            onClick={handlePauseToggle}
             className="btn btn-ghost btn-sm"
             aria-label={paused ? 'Resume' : 'Pause'}
           >
@@ -189,11 +170,10 @@ export default function LivePage() {
   );
 }
 
-function kindColor(k: FeedEvent['kind']): string {
+function kindColor(k: LiveEvent['kind']): string {
   switch (k) {
     case 'bet':     return '#8B5CF6';
     case 'resolve': return '#00FF87';
     case 'create':  return '#FFB020';
-    case 'cancel':  return '#FF4D6D';
   }
 }

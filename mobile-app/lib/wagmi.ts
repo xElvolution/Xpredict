@@ -1,10 +1,9 @@
-import { http, createConfig } from '@privy-io/wagmi';
-import { xLayer, xLayerTestnet } from './chains';
+import { http, createConfig } from 'wagmi';
+import { xLayerTestnet, xLayer } from '../../lib/chains';
 
 /**
- * Wagmi config wired through Privy. Privy handles all wallet connectors
- * (embedded, injected, OKX, MetaMask, social logins) — wagmi just handles
- * chain interactions, contract reads/writes, and queries.
+ * Wagmi config for the mobile app. Privy handles wallet connection;
+ * wagmi handles chain reads/writes.
  */
 export const wagmiConfig = createConfig({
   chains: [xLayerTestnet, xLayer],

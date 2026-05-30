@@ -38,7 +38,7 @@ export function Navigation() {
           <span style={{ fontWeight: 700, letterSpacing: '-0.02em', fontSize: 16 }}>
             XPredict
           </span>
-          <span className="badge badge-accent" style={{ marginLeft: 6 }}>X Layer</span>
+          <span className="badge badge-accent nav-chain-badge" style={{ marginLeft: 6 }}>X Layer</span>
         </Link>
 
         <div className="nav-links">
@@ -57,7 +57,7 @@ export function Navigation() {
         </div>
 
         <div className="row gap-2">
-          <Link href="/create" className="btn btn-ghost btn-sm" style={{ display: 'inline-flex' }}>
+          <Link href="/create" className="btn btn-ghost btn-sm nav-create-btn" style={{ display: 'inline-flex' }}>
             <Plus size={14} />
             Create
           </Link>
@@ -107,6 +107,10 @@ export function Navigation() {
       <style jsx>{`
         @media (max-width: 768px) {
           [data-mobile-toggle] { display: inline-flex !important; }
+          .nav-create-btn { display: none !important; }
+        }
+        @media (max-width: 480px) {
+          .nav-chain-badge { display: none !important; }
         }
       `}</style>
     </nav>

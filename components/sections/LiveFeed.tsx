@@ -1,48 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { FEED, type FeedEvent } from '@/lib/data';
+import { useLiveEvents, type LiveEvent } from '@/lib/use-live-events';
 import { formatUSD, timeAgo } from '@/lib/format';
 
-const KIND_LABEL: Record<FeedEvent['kind'], string> = {
+const KIND_LABEL: Record<LiveEvent['kind'], string> = {
   bet:     'BET',
   resolve: 'SETTLE',
-  create:  'CREATE',
-  cancel:  'VOID'
+  create:  'CREATE'
 };
 
-const PLACEHOLDER_TEXTS = [
-  'YES on Liverpool to win at home',
-  'NO on Bayern over 2.5 goals',
-  'YES on Sinner straight sets',
-  'NO on Curry hits 4+ threes',
-  'YES on McGregor TKO round 2',
-  'NO on PSG cleansheet'
-];
-
-const RANDOM_ADDRS = [
-  '0x9b41…22cd', '0x2210…aa01', '0xf021…1e7e', '0x5a3b…00b1',
-  '0x88c4…f1ac', '0x4022…dd99'
-];
-
 export function LiveFeed() {
-  const [events, setEvents] = useState<FeedEvent[]>(FEED);
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      const e: FeedEvent = {
-        id: `f${Math.random().toString(36).slice(2, 9)}`,
-        kind: 'bet',
-        at: new Date().toISOString(),
-        who: RANDOM_ADDRS[Math.floor(Math.random() * RANDOM_ADDRS.length)],
-        text: PLACEHOLDER_TEXTS[Math.floor(Math.random() * PLACEHOLDER_TEXTS.length)],
-        amount: Math.floor(20 + Math.random() * 2400)
-      };
-      setEvents((prev) => [e, ...prev].slice(0, 14));
-    }, 3200);
-    return () => clearInterval(id);
-  }, []);
+  const events = useLiveEvents();
 
   return (
     <section className="section">
@@ -125,11 +94,10 @@ export function LiveFeed() {
   );
 }
 
-function kindColor(k: FeedEvent['kind']): string {
+function kindColor(k: LiveEvent['kind']): string {
   switch (k) {
     case 'bet':     return '#8B5CF6';
     case 'resolve': return '#00FF87';
     case 'create':  return '#FFB020';
-    case 'cancel':  return '#FF4D6D';
   }
 }
