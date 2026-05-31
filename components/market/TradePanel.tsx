@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { recordTradeHistory } from '@/lib/platform/client';
 import { Sparkles, Wallet, Layers, Check, Loader2 } from 'lucide-react';
 import { parseUnits } from 'viem';
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
@@ -153,6 +154,24 @@ export function TradePanel({
   };
 
   const isWorking = approving || buying || confirming;
+  const recordedRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!confirmed || !txHash || !address || !marketId) return;
+    if (recordedRef.current === txHash) return;
+    recordedRef.current = txHash;
+    recordTradeHistory({
+      wallet: address,
+      marketId,
+      marketTitle,
+      kind: 'amm_buy',
+      side,
+      amountUsdc: numericAmount,
+      price: pct / 100,
+      txHash,
+      portfolioValue: numericAmount
+    }).catch(() => {});
+  }, [confirmed, txHash, address, marketId, marketTitle, side, numericAmount, pct]);
 
   return (
     <div className="card card-glow" style={{ padding: 0, overflow: 'hidden' }}>

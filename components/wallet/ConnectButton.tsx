@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useAccount, useBalance, useChainId, useSwitchChain } from 'wagmi';
-import { Copy, ExternalLink, LogOut, ChevronDown, User2, Wallet, AlertTriangle } from 'lucide-react';
+import { Copy, ExternalLink, LogOut, ChevronDown, User2, Settings, Wallet, AlertTriangle } from 'lucide-react';
 import { xLayerTestnet } from '@/lib/chains';
 import { formatAddress } from '@/lib/format';
 
@@ -201,6 +201,7 @@ function WalletDropdown({
 
       <div style={{ padding: 'var(--s-2)' }}>
         <DropLink href="/profile" Icon={User2} label="Profile · positions & P&L" />
+        <DropLink href="/settings" Icon={Settings} label="Settings" />
         <DropLink
           href={`${xLayerTestnet.blockExplorers!.default.url}/address/${address}`}
           Icon={ExternalLink}

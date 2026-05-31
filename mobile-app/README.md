@@ -25,7 +25,7 @@ For most development, **Expo Go on your phone is enough** — no Android Studio,
 - **Expo Router** — file-based routing in `app/`, mirroring Next.js App Router conventions
 - **Privy + wagmi** — same Privy App ID as the web app, so a user logs in once and the wallet works everywhere
 - **Shared lib** — imports from `../lib/contracts.ts`, `../lib/markets-onchain.ts`, etc. via Metro's `watchFolders` (configured in `metro.config.js`)
-- **Theme** — same dark cyberpunk palette as the web, ported to React Native StyleSheet in `constants/theme.ts`
+- **Platform API** — `lib/platform-api.ts` hits the same `/api/v1/*` endpoints as web (orders, history, settings, follows)
 
 ## Screens
 
@@ -34,8 +34,9 @@ For most development, **Expo Go on your phone is enough** — no Android Studio,
 | `app/(tabs)/index.tsx`        | Markets list (browse, filter, search)         |
 | `app/(tabs)/live.tsx`         | Live onchain event stream                     |
 | `app/(tabs)/coach.tsx`        | Coach AI chat (hits web app's /api/coach)     |
-| `app/(tabs)/profile.tsx`      | User positions + claim                        |
-| `app/market/[address].tsx`    | Market detail + trade panel                   |
+| `app/(tabs)/profile.tsx`      | Positions · Orders · History · Claims · Following + sparkline |
+| `app/settings.tsx`            | Display name, email, notification prefs       |
+| `app/market/[address].tsx`    | Hybrid market · AMM + Limit + Order book      |
 
 ## Building APK / IPA via EAS
 

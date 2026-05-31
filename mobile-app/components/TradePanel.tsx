@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, Pressable, ActivityIndicator, Alert, StyleSheet } from 'react-native';
 import { parseUnits } from 'viem';
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
@@ -6,16 +6,23 @@ import { usePrivy, useLoginWithOAuth } from '@privy-io/expo';
 import { colors, spacing, radii } from '../constants/theme';
 import { sharedStyles } from '../constants/styles';
 import { ADDRESSES, ERC20_ABI, PREDICTION_MARKET_ABI, USDC_DECIMALS } from '../../lib/contracts';
+import { recordTradeHistory } from '../lib/platform-api';
 
 type Side = 'yes' | 'no';
 
 export function TradePanel({
   marketAddress,
+  marketId,
+  marketTitle,
+  category,
   yesPct,
   noPct,
   resolved
 }: {
   marketAddress: `0x${string}`;
+  marketId?: string;
+  marketTitle?: string;
+  category?: string;
   yesPct: number;
   noPct: number;
   resolved: boolean;
@@ -24,10 +31,11 @@ export function TradePanel({
   const [amount, setAmount] = useState('25');
   const [error, setError] = useState('');
   const [txHash, setTxHash] = useState<`0x${string}` | undefined>();
+  const recordedRef = useRef<string | null>(null);
 
   const { user } = usePrivy();
   const { login } = useLoginWithOAuth();
-  const { address: userAddr, isConnected } = useAccount();
+  const { address: userAddr } = useAccount();
 
   const numericAmount = Math.max(0, Number(amount) || 0);
   const amountWei = numericAmount > 0 ? parseUnits(amount, USDC_DECIMALS) : 0n;
@@ -54,7 +62,7 @@ export function TradePanel({
   const { writeContractAsync: approveWrite, isPending: approving } = useWriteContract();
   const { writeContractAsync: buyWrite, isPending: buying } = useWriteContract();
 
-  const { isLoading: confirming } = useWaitForTransactionReceipt({
+  const { isLoading: confirming, isSuccess: confirmed } = useWaitForTransactionReceipt({
     hash: txHash,
     query: { enabled: !!txHash }
   });
@@ -63,18 +71,36 @@ export function TradePanel({
   const insufficient = (usdcBalance ?? 0n) < amountWei;
   const isWorking = approving || buying || confirming;
 
+  useEffect(() => {
+    if (!confirmed || !txHash || !userAddr || !marketId || !marketTitle) return;
+    if (recordedRef.current === txHash) return;
+    recordedRef.current = txHash;
+    recordTradeHistory({
+      wallet: userAddr,
+      marketId,
+      marketTitle,
+      kind: 'amm_buy',
+      side,
+      amountUsdc: numericAmount,
+      price: pct / 100,
+      txHash,
+      portfolioValue: numericAmount
+    }).catch(() => {});
+  }, [confirmed, txHash, userAddr, marketId, marketTitle, side, numericAmount, pct]);
+
   const handlePredict = async () => {
     setError('');
     if (!user) {
       try {
         await login({ provider: 'google' });
-      } catch (e: any) {
-        setError(e?.message ?? 'Login failed');
+      } catch (e: unknown) {
+        const err = e as { message?: string };
+        setError(err?.message ?? 'Login failed');
       }
       return;
     }
     if (numericAmount <= 0) return setError('Enter a stake');
-    if (insufficient) return setError('Insufficient USDC. Claim test USDC at xpredict.app on web.');
+    if (insufficient) return setError('Insufficient USDC. Claim test USDC on web.');
 
     try {
       if (needsApproval) {
@@ -96,8 +122,9 @@ export function TradePanel({
       });
       setTxHash(h);
       Alert.alert('Prediction placed', `Tx: ${h.slice(0, 10)}…`);
-    } catch (e: any) {
-      setError(e?.shortMessage ?? e?.message ?? 'Failed');
+    } catch (e: unknown) {
+      const err = e as { shortMessage?: string; message?: string };
+      setError(err?.shortMessage ?? err?.message ?? 'Failed');
     }
   };
 
@@ -117,20 +144,8 @@ export function TradePanel({
       </View>
 
       <View style={styles.toggle}>
-        <SideButton
-          label="YES"
-          pct={yesPct}
-          active={side === 'yes'}
-          tone="yes"
-          onPress={() => setSide('yes')}
-        />
-        <SideButton
-          label="NO"
-          pct={noPct}
-          active={side === 'no'}
-          tone="no"
-          onPress={() => setSide('no')}
-        />
+        <SideButton label="YES" pct={yesPct} active={side === 'yes'} tone="yes" onPress={() => setSide('yes')} />
+        <SideButton label="NO" pct={noPct} active={side === 'no'} tone="no" onPress={() => setSide('no')} />
       </View>
 
       <View>
@@ -153,18 +168,15 @@ export function TradePanel({
       </View>
 
       <View style={{ gap: spacing.s2 }}>
-        <Line k="Odds"             v={`${odds.toFixed(2)}x`} />
+        <Line k="Odds" v={`${odds.toFixed(2)}x`} />
         <Line k="Potential payout" v={`$${potential.toFixed(2)}`} highlight />
-        <Line k="Your USDC"        v={usdcBalance ? `$${(Number(usdcBalance) / 1e6).toFixed(2)}` : '$0.00'} />
+        <Line k="Your USDC" v={usdcBalance ? `$${(Number(usdcBalance) / 1e6).toFixed(2)}` : '$0.00'} />
       </View>
 
       {error ? <Text style={{ color: colors.negative, fontSize: 12 }}>{error}</Text> : null}
+      {confirmed ? <Text style={{ color: colors.positive, fontSize: 12, textAlign: 'center' }}>✓ Confirmed</Text> : null}
 
-      <Pressable
-        onPress={handlePredict}
-        disabled={isWorking}
-        style={[sharedStyles.btnPrimary, isWorking && { opacity: 0.6 }]}
-      >
+      <Pressable onPress={handlePredict} disabled={isWorking} style={[sharedStyles.btnPrimary, isWorking && { opacity: 0.6 }]}>
         {isWorking ? (
           <ActivityIndicator color="#fff" />
         ) : (
@@ -187,10 +199,7 @@ function SideButton({
   return (
     <Pressable
       onPress={onPress}
-      style={[
-        styles.toggleBtn,
-        active && { backgroundColor: tintSoft, borderColor: tint + '4d' }
-      ]}
+      style={[styles.toggleBtn, active && { backgroundColor: tintSoft, borderColor: tint + '4d' }]}
     >
       <Text style={[styles.toggleLabel, { color: active ? tint : colors.textDim }]}>{label}</Text>
       <Text style={[styles.togglePct, { color: active ? tint : colors.textMuted }]}>{pct}¢</Text>
@@ -202,12 +211,7 @@ function Line({ k, v, highlight }: { k: string; v: string; highlight?: boolean }
   return (
     <View style={sharedStyles.rowBetween}>
       <Text style={{ color: colors.textMuted, fontSize: 13 }}>{k}</Text>
-      <Text style={{
-        color: colors.text,
-        fontSize: highlight ? 15 : 13,
-        fontWeight: highlight ? '800' : '600',
-        fontFamily: 'JetBrainsMono'
-      }}>{v}</Text>
+      <Text style={{ color: colors.text, fontSize: highlight ? 15 : 13, fontWeight: highlight ? '800' : '600', fontFamily: 'JetBrainsMono' }}>{v}</Text>
     </View>
   );
 }
@@ -215,50 +219,11 @@ function Line({ k, v, highlight }: { k: string; v: string; highlight?: boolean }
 const styles = StyleSheet.create({
   heading: { color: colors.text, fontSize: 14, fontWeight: '700' },
   chain: { fontSize: 10, color: colors.textFaint, fontFamily: 'JetBrainsMono', letterSpacing: 1.2 },
-  label: {
-    color: colors.textFaint,
-    fontSize: 11,
-    fontWeight: '600',
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
-    marginBottom: spacing.s2
-  },
-  toggle: {
-    flexDirection: 'row',
-    gap: spacing.s2,
-    padding: 4,
-    backgroundColor: colors.surface,
-    borderRadius: radii.md,
-    borderWidth: 1,
-    borderColor: colors.border
-  },
-  toggleBtn: {
-    flex: 1,
-    padding: spacing.s3,
-    alignItems: 'center',
-    borderRadius: radii.sm,
-    borderWidth: 1,
-    borderColor: 'transparent',
-    backgroundColor: 'transparent'
-  },
+  label: { color: colors.textFaint, fontSize: 11, fontWeight: '600', letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: spacing.s2 },
+  toggle: { flexDirection: 'row', gap: spacing.s2, padding: 4, backgroundColor: colors.surface, borderRadius: radii.md, borderWidth: 1, borderColor: colors.border },
+  toggleBtn: { flex: 1, padding: spacing.s3, alignItems: 'center', borderRadius: radii.sm, borderWidth: 1, borderColor: 'transparent' },
   toggleLabel: { fontSize: 11, fontWeight: '700', letterSpacing: 0.8 },
   togglePct: { fontSize: 22, fontWeight: '800', fontFamily: 'JetBrainsMono', marginTop: 4 },
-  amountInput: {
-    backgroundColor: colors.surface,
-    borderRadius: radii.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: spacing.s4,
-    color: colors.text,
-    fontSize: 24,
-    fontWeight: '700',
-    fontFamily: 'JetBrainsMono'
-  },
-  quickBtn: {
-    paddingHorizontal: spacing.s3,
-    paddingVertical: spacing.s2,
-    borderRadius: radii.pill,
-    borderWidth: 1,
-    borderColor: colors.borderStrong
-  }
+  amountInput: { backgroundColor: colors.surface, borderRadius: radii.md, borderWidth: 1, borderColor: colors.border, padding: spacing.s4, color: colors.text, fontSize: 24, fontWeight: '700', fontFamily: 'JetBrainsMono' },
+  quickBtn: { paddingHorizontal: spacing.s3, paddingVertical: spacing.s2, borderRadius: radii.pill, borderWidth: 1, borderColor: colors.borderStrong }
 });

@@ -1,12 +1,14 @@
 import { NextRequest } from 'next/server';
 import { ensureSchema } from '@/lib/db';
 import { ensureSdkSchema } from '@/lib/sdk/db';
+import { ensurePlatformSchema } from '@/lib/platform/schema';
 import { apiErr } from '@/lib/sdk/response';
 import { rateLimit, rateLimitKey } from '@/lib/sdk/rate-limit';
 
 export async function ensureAllSchemas(): Promise<void> {
   await ensureSchema();
   await ensureSdkSchema();
+  await ensurePlatformSchema();
 }
 
 /** Apply rate limit; returns error response or null if allowed. */

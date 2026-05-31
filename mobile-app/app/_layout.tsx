@@ -19,6 +19,7 @@ export default function RootLayout() {
         >
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="market/[address]" options={{ title: 'Market' }} />
+          <Stack.Screen name="settings" options={{ title: 'Settings' }} />
           <Stack.Screen name="login" options={{ presentation: 'modal', title: 'Sign in' }} />
         </Stack>
       </AppProviders>

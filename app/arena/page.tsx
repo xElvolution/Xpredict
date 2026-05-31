@@ -10,6 +10,7 @@ import {
 import type { AgentPersona, AgentPick } from '@/lib/arena';
 import { useArenaData } from '@/lib/use-arena-data';
 import { useSlip } from '@/components/slip/SlipContext';
+import { FollowAgentButton } from '@/components/arena/FollowAgentButton';
 import { formatUSD, timeAgo } from '@/lib/format';
 
 export default function ArenaPage() {
@@ -30,7 +31,7 @@ export default function ArenaPage() {
         {/* Header */}
         <div className="stack-3" style={{ marginBottom: 'var(--s-8)' }}>
           <span className="eyebrow">
-            <Bot size={11} /> Agent Arena · {source === 'live' ? 'live picks' : 'demo picks'}
+            <Bot size={11} /> Agent Arena · {source === 'live' ? 'live picks' : 'awaiting agent picks'}
           </span>
           <div
             className="row"
@@ -268,8 +269,11 @@ function AgentScoreCard({
   const total = agent.record.wins + agent.record.losses;
   const wr = total > 0 ? (agent.record.wins / total) * 100 : 0;
   return (
-    <button
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onClick}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick(); }}
       className="card card-glow"
       style={{
         textAlign: 'left',
@@ -330,7 +334,10 @@ function AgentScoreCard({
         <Score k="Win %"  v={`${wr.toFixed(0)}%`} border />
         <Score k="Streak" v={`🔥 ${agent.record.streak}`}      border />
       </div>
-    </button>
+      <div style={{ marginTop: 'var(--s-3)' }} onClick={(e) => e.stopPropagation()}>
+        <FollowAgentButton agent={agent.handle} />
+      </div>
+    </div>
   );
 }
 

@@ -3,9 +3,11 @@
 import { use } from 'react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, ExternalLink, Shield, Clock, Activity, Users, Wallet } from 'lucide-react';
+import { ArrowLeft, Shield, Clock, Activity, Users, Wallet } from 'lucide-react';
 import { formatUSD, formatNumber, timeUntil, timeAgo } from '@/lib/format';
-import { TradePanel } from '@/components/market/TradePanel';
+import { HybridTradePanel } from '@/components/market/HybridTradePanel';
+import { MarketInfoPanels } from '@/components/market/MarketInfoPanels';
+import { ShareButton } from '@/components/ShareButton';
 import { ProbChart } from '@/components/market/ProbChart';
 import { useMarketState, toUiMarket } from '@/lib/markets-onchain';
 import { useEffect, useState } from 'react';
@@ -111,11 +113,19 @@ export default function MarketDetail({ params }: { params: Promise<{ id: string 
                   </span>
                 )}
               </div>
-              <h1 style={{ fontSize: 'clamp(1.75rem, 3vw, 2.5rem)', lineHeight: 1.15 }}>
-                {market.title}
-              </h1>
+              <div className="row" style={{ justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
+                <h1 style={{ fontSize: 'clamp(1.75rem, 3vw, 2.5rem)', lineHeight: 1.15, flex: 1 }}>
+                  {market.title}
+                </h1>
+                <ShareButton url={`/markets/${address}`} />
+              </div>
               {market.subtitle && (
                 <p style={{ marginTop: 12, color: 'var(--text-dim)' }}>{market.subtitle}</p>
+              )}
+              {meta.agent_handle && (
+                <p style={{ marginTop: 8, fontSize: 13, color: 'var(--text-muted)' }}>
+                  Proposed by <strong style={{ color: 'var(--accent-bright)' }}>{meta.agent_handle}</strong>
+                </p>
               )}
             </div>
 
@@ -158,17 +168,14 @@ export default function MarketDetail({ params }: { params: Promise<{ id: string 
               <MetaCell k="Curator"   v={market.agent}                Icon={Shield}   border mono />
             </div>
 
-            <div className="card">
-              <h3 style={{ fontSize: 16, marginBottom: 'var(--s-3)' }}>Resolution criteria</h3>
-              <p style={{ color: 'var(--text-dim)', marginBottom: 'var(--s-4)' }}>
-                This market settles automatically by the resolver agent once the underlying event has officially concluded. The agent cross-references three independent data sources; resolution requires 2-of-3 consensus.
-              </p>
-              <div className="stack-3">
-                <Source name="TheSportsDB"      url="https://www.thesportsdb.com" tag="primary"  />
-                <Source name="ESPN scoreboard"  url="https://www.espn.com"        tag="primary"  />
-                <Source name="CoinGecko"        url="https://www.coingecko.com"   tag="fallback" />
-              </div>
-            </div>
+            <MarketInfoPanels
+              subtitle={market.subtitle}
+              agent={meta.agent_handle ?? market.agent}
+              closesAt={market.closesAt}
+              category={market.category}
+              resolved={state.resolved}
+              winningOutcome={state.winningOutcome}
+            />
 
             <div className="card" style={{ padding: 0 }}>
               <div
@@ -213,7 +220,7 @@ export default function MarketDetail({ params }: { params: Promise<{ id: string 
           </div>
 
           <aside style={{ position: 'sticky', top: 'calc(var(--nav-h) + var(--s-6))' }}>
-            <TradePanel
+            <HybridTradePanel
               yesPct={yesPct}
               noPct={noPct}
               marketTitle={market.title}
@@ -287,32 +294,6 @@ function MetaCell({
         style={{ fontSize: mono ? 14 : 18, fontWeight: 600, letterSpacing: '-0.015em' }}
       >
         {v}
-      </div>
-    </div>
-  );
-}
-
-function Source({ name, url, tag }: { name: string; url: string; tag: 'primary' | 'fallback' }) {
-  return (
-    <div
-      className="row"
-      style={{
-        justifyContent: 'space-between',
-        padding: 'var(--s-3) var(--s-4)',
-        background: 'var(--surface)',
-        border: '1px solid var(--border)',
-        borderRadius: 'var(--r-md)'
-      }}
-    >
-      <div className="row gap-3">
-        <Shield size={14} color={tag === 'primary' ? 'var(--positive)' : 'var(--text-muted)'} />
-        <span style={{ fontSize: 14 }}>{name}</span>
-      </div>
-      <div className="row gap-3">
-        <span className={`badge ${tag === 'primary' ? 'badge-positive' : 'badge-neutral'}`}>{tag}</span>
-        <a href={url} target="_blank" rel="noopener noreferrer" className="row gap-1" style={{ color: 'var(--text-muted)', fontSize: 12 }}>
-          <ExternalLink size={12} />
-        </a>
       </div>
     </div>
   );

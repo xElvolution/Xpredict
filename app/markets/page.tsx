@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import Link from 'next/link';
 import { Search, SlidersHorizontal } from 'lucide-react';
 import { type Category } from '@/lib/data';
 import { MarketCard } from '@/components/sections/FeaturedMarkets';
@@ -75,7 +76,24 @@ export default function MarketsPage() {
           </div>
         </div>
 
-        {/* Category chips */}
+        {/* Category hubs + chips */}
+        <div className="row gap-2" style={{ flexWrap: 'wrap', marginBottom: 'var(--s-4)' }}>
+          {[
+            { slug: 'world-cup', label: 'World Cup 2026' },
+            { slug: 'football', label: 'Football hub' },
+            { slug: 'basketball', label: 'Basketball' },
+            { slug: 'crypto', label: 'Crypto' }
+          ].map((h) => (
+            <Link
+              key={h.slug}
+              href={`/markets/hub/${h.slug}`}
+              className="btn btn-sm btn-ghost"
+              style={{ borderRadius: 'var(--r-pill)', fontSize: 12 }}
+            >
+              {h.label}
+            </Link>
+          ))}
+        </div>
         <div className="row gap-2" style={{ flexWrap: 'wrap', marginBottom: 'var(--s-8)' }}>
           {CATEGORIES.map((c) => {
             const active = cat === c;

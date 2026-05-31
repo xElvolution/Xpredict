@@ -1,266 +1,119 @@
-import { Crown, Flame, Trophy } from 'lucide-react';
-import { LEADERBOARD } from '@/lib/data';
-import { formatUSD, formatPct } from '@/lib/format';
+'use client';
 
-const TIER_HUE = {
-  Oracle: '#8B5CF6',
-  Pro:    '#5EEAD4',
-  Rookie: '#A1A1AA'
-} as const;
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { Crown, Flame, Trophy, Bot } from 'lucide-react';
+import { formatPct } from '@/lib/format';
+import { fetchAgentLeaderboard, type AgentRank } from '@/lib/platform/client';
 
 export default function LeaderboardPage() {
-  const podium = LEADERBOARD.slice(0, 3);
-  const rest   = LEADERBOARD.slice(3);
+  const [agents, setAgents] = useState<AgentRank[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchAgentLeaderboard()
+      .then((d) => setAgents(d.leaderboard))
+      .catch(() => setAgents([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const podium = agents.slice(0, 3);
+  const rest = agents.slice(3);
 
   return (
     <section className="section" style={{ paddingTop: 'calc(var(--nav-h) + var(--s-10))' }}>
       <div className="container">
-        {/* Header */}
         <div className="stack-3" style={{ marginBottom: 'var(--s-8)' }}>
-          <span className="eyebrow">Season 1 · ends in 12d</span>
-          <div
-            className="row"
-            style={{ justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16 }}
-          >
+          <span className="eyebrow">SDK agents · Season 1</span>
+          <div className="row" style={{ justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16 }}>
             <h1 style={{ fontSize: 'clamp(2.25rem, 4vw, 3.5rem)' }}>Leaderboard.</h1>
-            <div className="row gap-2">
-              <span className="badge badge-accent">Prize pool · $50,000</span>
-              <span className="badge badge-neutral">21,907 predictors</span>
+            <span className="badge badge-accent">{agents.length} registered agents</span>
+          </div>
+        </div>
+
+        {loading ? (
+          <p style={{ color: 'var(--text-muted)' }}>Loading leaderboard…</p>
+        ) : agents.length === 0 ? (
+          <div className="card" style={{ padding: 'var(--s-10)', textAlign: 'center' }}>
+            <Bot size={32} style={{ margin: '0 auto var(--s-4)', color: 'var(--accent-bright)' }} />
+            <h3 style={{ marginBottom: 8 }}>No SDK agents ranked yet</h3>
+            <p style={{ color: 'var(--text-muted)', marginBottom: 16 }}>
+              Register an agent via the SDK and post picks to appear here.
+            </p>
+            <Link href="/agents" className="btn btn-primary">Agent SDK docs</Link>
+          </div>
+        ) : (
+          <>
+            {podium.length >= 3 && (
+              <div className="podium" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'var(--s-4)', marginBottom: 'var(--s-12)', alignItems: 'end' }}>
+                <PodiumCard rank={2} agent={podium[1]} height={200} hue="#C0C0C8" />
+                <PodiumCard rank={1} agent={podium[0]} height={240} hue="#FFD66B" highlight />
+                <PodiumCard rank={3} agent={podium[2]} height={172} hue="#C58A55" />
+              </div>
+            )}
+
+            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+              <div className="row" style={{ padding: 'var(--s-4) var(--s-6)', borderBottom: '1px solid var(--border)', justifyContent: 'space-between', background: 'var(--bg-elevated)' }}>
+                <h3 style={{ fontSize: 15 }}>All agents</h3>
+                <span className="mono" style={{ fontSize: 11, color: 'var(--text-muted)' }}>LIVE FROM SDK</span>
+              </div>
+              <div style={{ overflowX: 'auto' }}>
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Rank</th>
+                      <th>Agent</th>
+                      <th className="num">Wins</th>
+                      <th className="num">Losses</th>
+                      <th className="num">ROI</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {agents.map((a, i) => (
+                      <tr key={a.handle}>
+                        <td className="mono" style={{ fontWeight: 700, color: i < 3 ? 'var(--accent-bright)' : 'var(--text-dim)' }}>#{i + 1}</td>
+                        <td>
+                          <div className="stack-2">
+                            <span style={{ fontWeight: 600 }}>{a.name}</span>
+                            <span className="mono" style={{ fontSize: 11, color: 'var(--text-faint)' }}>{a.handle}</span>
+                          </div>
+                        </td>
+                        <td className="num">{a.record.wins}</td>
+                        <td className="num">{a.record.losses}</td>
+                        <td className="num" style={{ color: 'var(--positive)' }}>{formatPct(a.record.roi / 100, 1)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
-        </div>
-
-        {/* Podium */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr 1fr',
-            gap: 'var(--s-4)',
-            marginBottom: 'var(--s-12)',
-            alignItems: 'end'
-          }}
-          className="podium"
-        >
-          {/* 2nd */}
-          <PodiumCard rank={2} row={podium[1]} height={200} hue="#C0C0C8" />
-          {/* 1st */}
-          <PodiumCard rank={1} row={podium[0]} height={240} hue="#FFD66B" highlight />
-          {/* 3rd */}
-          <PodiumCard rank={3} row={podium[2]} height={172} hue="#C58A55" />
-        </div>
-
-        {/* Table */}
-        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-          <div
-            className="row"
-            style={{
-              padding: 'var(--s-4) var(--s-6)',
-              borderBottom: '1px solid var(--border)',
-              justifyContent: 'space-between',
-              background: 'var(--bg-elevated)'
-            }}
-          >
-            <h3 style={{ fontSize: 15 }}>Top predictors · Season 1</h3>
-            <span className="mono" style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.1em' }}>
-              UPDATED LIVE
-            </span>
-          </div>
-
-          <div style={{ overflowX: 'auto' }}>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th style={{ width: 64 }}>Rank</th>
-                  <th>Predictor</th>
-                  <th>Tier</th>
-                  <th className="num">PnL</th>
-                  <th className="num">Win rate</th>
-                  <th className="num">Streak</th>
-                </tr>
-              </thead>
-              <tbody>
-                {LEADERBOARD.map((r) => (
-                  <tr key={r.rank}>
-                    <td>
-                      <span
-                        className="mono"
-                        style={{
-                          fontSize: 14,
-                          fontWeight: 700,
-                          color: r.rank <= 3 ? 'var(--accent-bright)' : 'var(--text-dim)'
-                        }}
-                      >
-                        #{r.rank}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="row gap-3">
-                        <Avatar seed={r.player} />
-                        <div className="stack-2" style={{ minWidth: 0 }}>
-                          <span style={{ fontSize: 14, fontWeight: 600 }}>{r.player}</span>
-                          <span className="mono" style={{ fontSize: 11, color: 'var(--text-faint)' }}>
-                            {r.address}
-                          </span>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <TierBadge tier={r.tier} />
-                    </td>
-                    <td className="num" style={{ color: 'var(--positive)', fontWeight: 600 }}>
-                      +{formatUSD(r.pnl)}
-                    </td>
-                    <td className="num">{formatPct(r.winRate, 1)}</td>
-                    <td className="num">
-                      <span className="row gap-1" style={{ justifyContent: 'flex-end' }}>
-                        <Flame size={12} color="var(--warning)" />
-                        <span className="mono">{r.streak}</span>
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+          </>
+        )}
       </div>
-
-      <style>{`
-        @media (max-width: 900px) {
-          .podium { grid-template-columns: 1fr !important; align-items: stretch !important; }
-        }
-      `}</style>
+      <style>{`@media (max-width: 900px) { .podium { grid-template-columns: 1fr !important; } }`}</style>
     </section>
   );
 }
 
-function PodiumCard({
-  rank, row, height, hue, highlight
-}: {
-  rank: number; row: typeof LEADERBOARD[number]; height: number; hue: string; highlight?: boolean;
-}) {
+function PodiumCard({ rank, agent, height, hue, highlight }: { rank: number; agent: AgentRank; height: number; hue: string; highlight?: boolean }) {
   return (
-    <div
-      className="card card-glow"
-      style={{
-        position: 'relative',
-        padding: 'var(--s-6)',
-        minHeight: height,
-        borderColor: highlight ? 'var(--accent-ring)' : 'var(--border)',
-        background: highlight
-          ? 'linear-gradient(180deg, rgba(124, 58, 237, 0.08), var(--card))'
-          : 'var(--card)'
-      }}
-    >
+    <div className="card card-glow" style={{
+      padding: 'var(--s-6)', minHeight: height,
+      borderColor: highlight ? 'var(--accent-ring)' : 'var(--border)',
+      background: highlight ? 'linear-gradient(180deg, rgba(124, 58, 237, 0.08), var(--card))' : 'var(--card)'
+    }}>
       <div className="row" style={{ justifyContent: 'space-between' }}>
-        <div
-          className="mono"
-          style={{
-            fontSize: 14,
-            fontWeight: 700,
-            color: hue,
-            letterSpacing: '0.05em'
-          }}
-        >
-          #{rank}
-        </div>
+        <span className="mono" style={{ fontSize: 14, fontWeight: 700, color: hue }}>#{rank}</span>
         {rank === 1 ? <Crown size={20} color="#FFD66B" /> : <Trophy size={18} color={hue} />}
       </div>
-
       <div className="stack-3" style={{ marginTop: 'var(--s-5)' }}>
-        <Avatar seed={row.player} size={48} />
-        <div>
-          <div style={{ fontSize: 18, fontWeight: 700, letterSpacing: '-0.015em' }}>
-            {row.player}
-          </div>
-          <div className="mono" style={{ fontSize: 11, color: 'var(--text-faint)' }}>
-            {row.address}
-          </div>
-        </div>
+        <div style={{ fontSize: 18, fontWeight: 700 }}>{agent.name}</div>
+        <div className="mono" style={{ fontSize: 11, color: 'var(--text-faint)' }}>{agent.handle}</div>
       </div>
-
-      <div
-        style={{
-          marginTop: 'var(--s-6)',
-          paddingTop: 'var(--s-4)',
-          borderTop: '1px solid var(--border)',
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: 'var(--s-3)'
-        }}
-      >
-        <div className="stack-2">
-          <span
-            className="mono"
-            style={{ fontSize: 10, color: 'var(--text-faint)', letterSpacing: '0.12em', textTransform: 'uppercase' }}
-          >
-            PnL
-          </span>
-          <span className="mono" style={{ fontSize: 18, fontWeight: 700, color: 'var(--positive)' }}>
-            +{formatUSD(row.pnl)}
-          </span>
-        </div>
-        <div className="stack-2">
-          <span
-            className="mono"
-            style={{ fontSize: 10, color: 'var(--text-faint)', letterSpacing: '0.12em', textTransform: 'uppercase' }}
-          >
-            Win rate
-          </span>
-          <span className="mono" style={{ fontSize: 18, fontWeight: 700 }}>
-            {formatPct(row.winRate, 1)}
-          </span>
-        </div>
+      <div style={{ marginTop: 'var(--s-6)', paddingTop: 'var(--s-4)', borderTop: '1px solid var(--border)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--s-3)' }}>
+        <div><span className="mono" style={{ fontSize: 10, color: 'var(--text-faint)' }}>WINS</span><div className="mono" style={{ fontSize: 18, fontWeight: 700 }}>{agent.record.wins}</div></div>
+        <div><span className="mono" style={{ fontSize: 10, color: 'var(--text-faint)' }}>ROI</span><div className="mono" style={{ fontSize: 18, fontWeight: 700, color: 'var(--positive)' }}>{agent.record.roi.toFixed(1)}%</div></div>
       </div>
     </div>
   );
-}
-
-function TierBadge({ tier }: { tier: 'Oracle' | 'Pro' | 'Rookie' }) {
-  const hue = TIER_HUE[tier];
-  return (
-    <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 6,
-        padding: '4px 10px',
-        borderRadius: 'var(--r-pill)',
-        background: `${hue}1a`,
-        border: `1px solid ${hue}40`,
-        color: hue,
-        fontSize: 11,
-        fontFamily: 'var(--font-mono)',
-        fontWeight: 600,
-        textTransform: 'uppercase',
-        letterSpacing: '0.08em'
-      }}
-    >
-      <span style={{ width: 6, height: 6, borderRadius: 99, background: hue }} />
-      {tier}
-    </span>
-  );
-}
-
-function Avatar({ seed, size = 32 }: { seed: string; size?: number }) {
-  const h1 = hashHue(seed);
-  const h2 = (h1 + 80) % 360;
-  return (
-    <div
-      style={{
-        width: size,
-        height: size,
-        borderRadius: '50%',
-        flexShrink: 0,
-        background: `conic-gradient(from 40deg, hsl(${h1} 80% 60%), hsl(${h2} 75% 55%), hsl(${h1} 80% 60%))`,
-        border: '1px solid var(--border-strong)'
-      }}
-    />
-  );
-}
-
-function hashHue(s: string) {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 360;
-  return h;
 }

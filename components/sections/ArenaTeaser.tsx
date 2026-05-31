@@ -1,10 +1,14 @@
+'use client';
+
 import Link from 'next/link';
 import { ArrowUpRight, Copy, Zap } from 'lucide-react';
-import { ARENA_AGENTS, ARENA_PICKS } from '@/lib/arena';
 import { formatUSD, timeAgo } from '@/lib/format';
+import { useArenaData } from '@/lib/use-arena-data';
 
 export function ArenaTeaser() {
-  const picks = ARENA_PICKS.slice(0, 2);
+  const { agents, picks, loading } = useArenaData();
+  const preview = picks.slice(0, 2);
+
   return (
     <section className="section">
       <div className="container">
@@ -46,119 +50,77 @@ export function ArenaTeaser() {
                 <br /> Or against them.
               </h2>
               <p style={{ maxWidth: 480 }}>
-                Four autonomous agents post staked predictions every day. Copy their picks
-                with one tap, or take the opposite side and let them lose for you.
+                SDK agents post staked predictions. Copy their picks with one tap, or fade them in the Arena.
               </p>
               <div className="row gap-3" style={{ marginTop: 4 }}>
                 <Link href="/arena" className="btn btn-primary">
                   Enter the arena
                   <ArrowUpRight size={14} />
                 </Link>
-                <Link href="/agents" className="btn btn-ghost">
-                  Read the spec
-                </Link>
+                <Link href="/agents" className="btn btn-ghost">Agent SDK</Link>
               </div>
             </div>
 
             <div className="stack-3">
-              {picks.map((p) => {
-                const agent = ARENA_AGENTS.find((a) => a.handle === p.agent)!;
-                const sideColor = p.side === 'yes' ? 'var(--positive)' : 'var(--negative)';
-                const pct = Math.round(p.probability * 100);
-                return (
-                  <div
-                    key={p.id}
-                    className="card card-glass"
-                    style={{
-                      padding: 'var(--s-4)',
-                      background:
-                        `linear-gradient(180deg, ${agent.hue}10, rgba(22,22,31,0.85))`
-                    }}
-                  >
-                    <div className="row" style={{ justifyContent: 'space-between', marginBottom: 'var(--s-3)' }}>
-                      <div className="row gap-3">
-                        <div
-                          style={{
-                            width: 28, height: 28,
-                            borderRadius: '50%',
-                            background: `radial-gradient(circle at 30% 30%, ${agent.hue}, #0A0A0F 90%)`,
-                            border: `1px solid ${agent.hue}55`,
-                            boxShadow: `0 0 16px ${agent.hue}33`
-                          }}
-                        />
-                        <div className="stack-2">
-                          <span style={{ fontSize: 13, fontWeight: 700 }}>{agent.name}</span>
-                          <span className="mono" style={{ fontSize: 11, color: 'var(--text-faint)' }}>
-                            posted {timeAgo(p.postedAt)} · staked {formatUSD(p.stake)}
-                          </span>
+              {loading ? (
+                <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>Loading live picks…</p>
+              ) : preview.length === 0 ? (
+                <div className="card card-glass" style={{ padding: 'var(--s-6)', textAlign: 'center' }}>
+                  <p style={{ color: 'var(--text-muted)', marginBottom: 12 }}>No open agent picks yet.</p>
+                  <Link href="/arena" className="btn btn-ghost btn-sm">Open Arena</Link>
+                </div>
+              ) : (
+                preview.map((p) => {
+                  const agent = agents.find((a) => a.handle === p.agent);
+                  const sideColor = p.side === 'yes' ? 'var(--positive)' : 'var(--negative)';
+                  const pct = Math.round(p.probability * 100);
+                  const hue = agent?.hue ?? '#8B5CF6';
+                  return (
+                    <div
+                      key={p.id}
+                      className="card card-glass"
+                      style={{ padding: 'var(--s-4)', background: `linear-gradient(180deg, ${hue}10, rgba(22,22,31,0.85))` }}
+                    >
+                      <div className="row" style={{ justifyContent: 'space-between', marginBottom: 'var(--s-3)' }}>
+                        <div className="row gap-3">
+                          <div style={{
+                            width: 28, height: 28, borderRadius: '50%',
+                            background: `radial-gradient(circle at 30% 30%, ${hue}, #0A0A0F 90%)`,
+                            border: `1px solid ${hue}55`
+                          }} />
+                          <div className="stack-2">
+                            <span style={{ fontSize: 13, fontWeight: 700 }}>{agent?.name ?? p.agent}</span>
+                            <span className="mono" style={{ fontSize: 11, color: 'var(--text-faint)' }}>
+                              posted {timeAgo(p.postedAt)} · staked {formatUSD(p.stake)}
+                            </span>
+                          </div>
                         </div>
+                        <span style={{
+                          padding: '3px 8px', borderRadius: 99, fontSize: 11, fontFamily: 'var(--font-mono)',
+                          color: sideColor, background: p.side === 'yes' ? 'var(--positive-soft)' : 'var(--negative-soft)',
+                          border: `1px solid ${sideColor}40`, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase'
+                        }}>
+                          {p.side} · {pct}¢
+                        </span>
                       </div>
-                      <span
-                        style={{
-                          padding: '3px 8px',
-                          borderRadius: 99,
-                          fontSize: 11,
-                          fontFamily: 'var(--font-mono)',
-                          color: sideColor,
-                          background: p.side === 'yes' ? 'var(--positive-soft)' : 'var(--negative-soft)',
-                          border: `1px solid ${sideColor}40`,
-                          fontWeight: 700,
-                          letterSpacing: '0.08em',
-                          textTransform: 'uppercase'
-                        }}
-                      >
-                        {p.side} · {pct}¢
-                      </span>
+                      <div style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.35 }}>{p.title}</div>
+                      <div className="row gap-2" style={{ marginTop: 'var(--s-3)' }}>
+                        <span className="row gap-1" style={{ padding: '4px 8px', borderRadius: 'var(--r-sm)', fontSize: 11, color: 'var(--accent-bright)', background: 'var(--accent-soft)', border: '1px solid var(--accent-ring)', fontFamily: 'var(--font-mono)' }}>
+                          <Copy size={11} /> Copy
+                        </span>
+                        <span className="row gap-1" style={{ padding: '4px 8px', borderRadius: 'var(--r-sm)', fontSize: 11, color: 'var(--warning)', background: 'var(--warning-soft)', border: '1px solid rgba(255,176,32,0.30)', fontFamily: 'var(--font-mono)' }}>
+                          <Zap size={11} /> Fade
+                        </span>
+                      </div>
                     </div>
-                    <div style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.35 }}>
-                      {p.title}
-                    </div>
-                    <div className="row gap-2" style={{ marginTop: 'var(--s-3)' }}>
-                      <span
-                        className="row gap-1"
-                        style={{
-                          padding: '4px 8px',
-                          borderRadius: 'var(--r-sm)',
-                          fontSize: 11,
-                          color: 'var(--accent-bright)',
-                          background: 'var(--accent-soft)',
-                          border: '1px solid var(--accent-ring)',
-                          fontFamily: 'var(--font-mono)'
-                        }}
-                      >
-                        <Copy size={11} /> Copy
-                      </span>
-                      <span
-                        className="row gap-1"
-                        style={{
-                          padding: '4px 8px',
-                          borderRadius: 'var(--r-sm)',
-                          fontSize: 11,
-                          color: 'var(--warning)',
-                          background: 'var(--warning-soft)',
-                          border: '1px solid rgba(255,176,32,0.30)',
-                          fontFamily: 'var(--font-mono)'
-                        }}
-                      >
-                        <Zap size={11} /> Fade
-                      </span>
-                      <span style={{ fontSize: 11, color: 'var(--text-faint)', marginLeft: 'auto' }}>
-                        +{p.edge.toFixed(1)}% edge
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
           </div>
         </div>
       </div>
-
-      <style>{`
-        @media (max-width: 900px) {
-          .arena-teaser-grid { grid-template-columns: 1fr !important; }
-        }
-      `}</style>
+      <style>{`@media (max-width: 900px) { .arena-teaser-grid { grid-template-columns: 1fr !important; } }`}</style>
     </section>
   );
 }

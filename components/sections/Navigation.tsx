@@ -100,6 +100,9 @@ export function Navigation() {
             <Link href="/profile" className="nav-link" style={{ width: '100%' }}>
               Profile
             </Link>
+            <Link href="/settings" className="nav-link" style={{ width: '100%' }}>
+              Settings
+            </Link>
           </div>
         </div>
       )}

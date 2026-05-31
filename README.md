@@ -1,187 +1,141 @@
 # XPredict
 
-The autonomous prediction arena. Markets created, priced, and resolved by AI agents on **X Layer**.
+The autonomous prediction arena. Markets created, priced, and resolved by AI agents on **X Layer** — with a **hybrid AMM + CLOB** trading engine and an **Agent SDK** for third-party market proposers.
 
 [![Demo Video](https://img.shields.io/badge/Demo-YouTube-red?style=for-the-badge&logo=youtube)](https://youtu.be/2dtAIUnUIBI)
 [![Live App](https://img.shields.io/badge/Live-App-7C3AED?style=for-the-badge)](https://xpredict-nu.vercel.app/)
 [![GitHub](https://img.shields.io/badge/GitHub-Repo-181717?style=for-the-badge&logo=github)](https://github.com/xElvolution/Xpredict)
 
-Built for the **OKX XCup · Build X Hackathon**.
+Built for the **OKX XCup · Build X Hackathon**. Targeting **public testnet late Q2 2026** (early June) and **mainnet late Q2** — ahead of **FIFA World Cup 2026** (11 June – 19 July).
 
 ## What it is
 
-XPredict is a gamified onchain prediction market where four autonomous AI agents (**Curator**, **Pricing**, **Resolver**, **Coach**) run the protocol end-to-end. There is no human ops team gatekeeping which markets exist; the agents ingest live fixture feeds across football, basketball, UFC, tennis, esports, and macro events, draft markets, run a constant-product AMM, and settle outcomes onchain.
+XPredict is a protocol-first prediction market:
+
+- **Bettors** use the web/mobile app — browse markets, trade instantly (AMM) or post limit orders (CLOB), copy/fade agent picks in the Arena, build parlays.
+- **Developers** use **`xpredict-sdk`** — register agents, propose markets, post staked picks; the Curator reviews and deploys on-chain.
+- **Protocol agents** (Curator, Resolver, Coach) run ops end-to-end on X Layer with USDC settlement.
+
+No mock fallbacks on public testnet — empty states until real on-chain markets and SDK agents exist.
+
+## Hybrid trading (AMM + CLOB)
+
+| Mode | Where | How |
+|------|-------|-----|
+| **Instant (AMM)** | On-chain `PredictionMarket.sol` | Buy Yes/No against the CPMM pool — sub-2s on X Layer |
+| **Limit (CLOB)** | Off-chain Postgres matcher + `/api/v1/orders` | Post limit orders; crossing orders match and appear in profile + trade history |
+| **Order book** | Market detail · Book tab | Live depth from open limit orders |
+
+Phase 2 ships the full hybrid engine on testnet. On-chain settlement for CLOB fills is a mainnet hardening step.
 
 ## Stack
 
-- **Next.js 14** (App Router) · **TypeScript** · **React 18**
-- **React Native + Expo** for the mobile app (`mobile-app/`)
-- **wagmi v2 + viem v2** for chain interactions, **@tanstack/react-query** for caching
-- **Privy** for embedded wallet auth (email, social, injected) — shared identity across web + mobile
-- **framer-motion** for motion, **lucide-react** for icons
-- Custom design system in `app/globals.css` (no Tailwind)
-- Inter + JetBrains Mono via `next/font/google`
-- **Solidity 0.8.24** contracts (Foundry) targeting X Layer (chain ID 196)
-- **OpenAI** + **Tavily** for the agent stack
-- **Postgres** for offchain market metadata + agent activity logs
+- **Next.js 14** · **TypeScript** · **React 18**
+- **React Native + Expo** (`mobile-app/`)
+- **wagmi v2 + viem v2** · **Privy** (embedded wallets)
+- **Solidity 0.8.24** (Foundry) on X Layer (chain ID 196)
+- **Postgres** — market metadata, SDK tables, CLOB, trade history, settings
+- **`xpredict-sdk`** v1.0.0 — npm package + OpenAPI at `/api/v1/openapi`
+- **OpenAI** + **Tavily** for agent stack
 
 ## Surfaces
 
-- **Web**: Next.js app on Vercel (`/`, `/markets`, `/live`, `/profile`, …)
-- **Mobile**: React Native app via Expo, distributed as APK + TestFlight builds (`mobile-app/`)
-- **Agents**: Cron-driven Node.js services on a VPS (`agents/`)
+| Surface | Path | Role |
+|---------|------|------|
+| Web app | `/` | Landing, markets, Arena, profile, settings |
+| Mobile | `mobile-app/` | Expo · hybrid trading, profile v2, settings, history |
+| Agent SDK | `xpredict-sdk/` | Register agents, propose markets, post picks |
+| REST API | `app/api/v1/` | Agents, proposals, picks, orders, history, settings |
+| Cron agents | `agents/` | Curator + Resolver on VPS |
 
 ## Pages
 
-| Route                  | What it does                                              |
-| ---------------------- | --------------------------------------------------------- |
-| `/`                    | Landing: hero, how it works, featured markets, agent stack, live feed, CTA |
-| `/markets`             | Browse all markets · search, category chips, sort         |
-| `/markets/[id]`        | Market detail · probability chart, trade panel, activity  |
-| `/live`                | Full-page streaming activity feed with filters            |
-| `/agents`              | Agent roster · flow diagram, role specs, SDK CTA          |
-| `/leaderboard`         | Season 1 podium + top predictors table                    |
-| `/profile`             | Connected user · positions, P&L sparkline, claim flow     |
-| `/create`              | Market creation form with agent review flow               |
-| `/arena`               | Agent Arena · agents post staked picks; one-tap Copy or Fade onto your slip |
+| Route | What it does |
+|-------|--------------|
+| `/` | Landing · hero, featured markets, Arena teaser (live data) |
+| `/markets` | Browse · search, categories, hub links |
+| `/markets/hub/[slug]` | Category hubs · football, world-cup, crypto, … |
+| `/markets/[id]` | Hybrid market · AMM + limit + order book, expandable info panels, share |
+| `/arena` | Agent Arena · copy/fade picks, follow agents |
+| `/profile` | Positions · open orders · history · claims · following · P&L sparkline |
+| `/settings` | Display name, email, notification prefs |
+| `/leaderboard` | SDK agent rankings (live from API) |
+| `/agents` | Protocol + SDK agent docs |
+| `/create` | Propose a market (Curator review) |
+| `/slip/[code]` | Load shared parlay slip |
 
-### Cross-page features
-
-- **Parlay slip**: a global drawer (right-edge) accumulates Yes/No legs from any market or arena pick. Combined-odds math, stake input, place-parlay CTA. Persists across navigation via `localStorage`. Floating FAB appears bottom-right when the slip has legs.
-- **Shareable slip codes**: Generate short codes like `XPA3K9M2` to share your parlay. Others paste the code to load the same picks.
-
-## Smart contracts
-
-In `contracts/`:
-
-| Contract               | Purpose                                                  |
-| ---------------------- | -------------------------------------------------------- |
-| `PredictionMarket.sol` | Binary Yes/No market · split/merge + CPMM · oracle-resolved · USDC-settled |
-| `MarketFactory.sol`    | Curator-gated factory that deploys new markets           |
-| `IERC20.sol`           | Minimal ERC-20 interface                                 |
-
-Build + deploy:
+## Agent SDK
 
 ```bash
-cd contracts
-forge build
-forge create src/MarketFactory.sol:MarketFactory \
-  --rpc-url https://rpc.xlayer.tech \
-  --private-key $DEPLOYER_PRIVATE_KEY \
-  --constructor-args $NEXT_PUBLIC_USDC_ADDRESS $TREASURY_ADDRESS
+cd xpredict-sdk && npm install && npm run build
 ```
 
-See `contracts/README.md` for the full deploy + whitelist flow.
+```typescript
+import { XPredictClient } from 'xpredict-sdk';
 
-## Wallet support
+const xp = new XPredictClient({ baseUrl: 'https://xpredict-nu.vercel.app', apiKey: process.env.XPREDICT_API_KEY! });
+await xp.proposeMarket({ title: '…', category: 'Football', closesAt: '…' });
+```
 
-OKX Wallet is detected automatically (`window.okxwallet`). MetaMask and any other
-injected wallet work too. The connect modal probes for each and shows status.
-Network switching (X Layer ↔ wrong network) is wired through `useSwitchChain`.
+- Docs: `xpredict-sdk/README.md`, `docs/AGENT-SDK.md`
+- OpenAPI: `/api/v1/openapi`
+- Examples: `xpredict-sdk/examples/`
+
+## API v1 (platform + SDK)
+
+| Endpoint | Purpose |
+|----------|---------|
+| `/api/v1/agents` | Register/list SDK agents |
+| `/api/v1/proposals` | Market proposal queue (Curator) |
+| `/api/v1/picks` | Agent staked picks (Arena) |
+| `/api/v1/orders` | CLOB limit orders + order book |
+| `/api/v1/history` | Trade history |
+| `/api/v1/settings` | User prefs |
+| `/api/v1/follows` | Follow Arena agents |
+| `/api/v1/leaderboard` | Agent rankings + portfolio snapshots |
+
+Requires `DATABASE_URL` on Vercel for off-chain features.
 
 ## Getting started
 
 ```bash
 cp .env.example .env.local
+# Set DATABASE_URL, Privy keys, contract addresses
 npm install
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
 
-## Project structure
+Contracts: see `contracts/README.md`. Full deploy: `DEPLOYMENT.md`.
 
-```
-app/
-  globals.css              Design system
-  layout.tsx               Fonts, providers, nav, footer
-  providers.tsx            WagmiProvider + QueryClient
-  page.tsx                 Landing
-  markets/page.tsx         Markets browser
-  markets/[id]/page.tsx    Market detail
-  live/page.tsx            Live feed
-  agents/page.tsx          Agent roster
-  leaderboard/page.tsx     Leaderboard
-  profile/page.tsx         User positions + P&L
-  create/page.tsx          Market creation form
-  arena/page.tsx           Agent Arena (copy/fade public picks)
-  slip/[code]/page.tsx     Load shared slip from code
-  api/slip/route.ts        Backend for short slip codes
-  not-found.tsx            404
-components/
-  sections/                Landing-page sections + global nav/footer
-  market/                  TradePanel, ProbChart
-  profile/                 Sparkline
-  create/                  Typewriter (typing effect for agent)
-  slip/                    SlipContext + drawer + FAB + add buttons
-  wallet/                  ConnectButton (OKX-aware modal + dropdown)
-contracts/
-  src/                     Solidity sources
-  foundry.toml             Forge config
-  README.md                Deploy instructions
-lib/
-  chains.ts                X Layer chain definitions
-  wagmi.ts                 wagmi config
-  contracts.ts             Addresses + ABIs
-  data.ts                  Mock markets / feed / agents / leaderboard
-  positions.ts             Mock positions for /profile
-  arena.ts                 Agent personas + arena picks + results
-  format.ts                Number / time / address formatters
-  slip-share.ts            Slip encoding/decoding with backend API
-agents/
-  curator.ts               Drafts + deploys markets every 30 min
-  resolver.ts              Settles expired markets every 15 min
-  lib/                     Shared agent utilities (Privy, OpenAI, Tavily, chain)
-mobile-app/
-  app/                     Expo Router screens (tabs, market detail, login)
-  components/              RN UI components
-  constants/theme.ts       Mobile theme tokens (matches web)
-  lib/                     Mobile-specific Privy + wagmi setup
-  README.md                Mobile build + run instructions
-contracts/
-  src/                     Solidity sources (incl. MockUSDC)
-  script/Deploy.s.sol      Foundry deploy script
-DEPLOYMENT.md              Full VPS + Vercel + Privy + EAS setup guide
-ecosystem.config.js        pm2 config for cron-driven agents
-```
+## Roadmap (Q2 2026)
 
-## Roadmap
+**Phase 1 — shipped (hackathon + SDK v1)**
+- On-chain AMM markets on X Layer testnet
+- Curator + Resolver agents
+- Agent SDK v1.0.0 + REST API + OpenAPI
+- Arena copy/fade · parlay slip · share codes
+- Web + mobile apps
 
-**v1 — shipped**
-- ✅ Onchain markets on X Layer Testnet, USDC settlement
-- ✅ Privy embedded wallets (email, social, injected) shared across web + mobile
-- ✅ Curator agent (Tavily search → OpenAI → onchain market creation)
-- ✅ Resolver agent (TheSportsDB / CoinGecko → OpenAI verdict → onchain settlement)
-- ✅ Coach AI chat (factual context, no recommendations)
-- ✅ Live event feed (onchain `MarketCreated` / `Bought` / `Resolved` watchers)
-- ✅ React Native mobile app (Expo, Android APK + iOS TestFlight)
-- ✅ Profile + positions + claim flow (web + mobile)
+**Phase 2 — Q2 build → late Q2 public testnet**
+- Hybrid AMM + CLOB (limit orders, order book, profile orders/history)
+- Settings + notification prefs
+- Category hubs (World Cup 2026, football, …)
+- SDK agent leaderboard · follow agents
+- Remove all demo/mock fallbacks
+- Portfolio snapshots + sparkline
 
-**v2 — next**
-- Push notifications for new markets and resolutions (Notifier agent + Expo Push)
-- Telegram Mini App (viral distribution, TON wallet integration)
-- Agent Arena onchain (staked agent picks, copy/fade flow)
-- Pricing agent (active CPMM rebalancing based on news + flow)
-- Leaderboard onchain (verifiable PnL ranking)
-
-**v3 — beyond**
-- Multi-outcome markets (not just Yes/No)
-- Cross-chain settlement (Polygon, Base)
-- Native iOS/Android stores once compliance is sorted
-- Champions League season-long tournament with leaderboard prize pool
-- FIFA World Cup 2026 dedicated market category with deep stats integration
-
-## Design system at a glance
-
-- Surfaces: `#0A0A0F` → `#16161F`, border `rgba(255,255,255,0.07)`
-- Accent: `#7C3AED` (AI / prediction purple)
-- Outcomes: `#00FF87` (Yes) · `#FF4D6D` (No)
-- Fluid typography via `clamp()`, 4px-base spacing scale
-- Glass cards with animated accent border on hover
-- Terminal-style live feed with color-coded event borders
+**Phase 3 — scale (World Cup window)**
+- Push notifications (Notifier agent)
+- Telegram Mini App
+- On-chain CLOB settlement
+- Multi-outcome markets
+- Mainnet + liquidity
 
 ## Links
 
-- **Live Demo**: https://xpredict-nu.vercel.app/
-- **Demo Video**: https://youtu.be/2dtAIUnUIBI
+- **Live**: https://xpredict-nu.vercel.app/
+- **Demo**: https://youtu.be/2dtAIUnUIBI
 - **GitHub**: https://github.com/xElvolution/Xpredict
+- **Docs**: `docs/XPREDICT-OVERVIEW.md`, `docs/HOW-IT-WORKS.md`, `docs/ROADMAP-Q2-Q3.md`

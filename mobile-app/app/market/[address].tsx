@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, Pressable, StyleSheet, Share } from 'react-native';
 import { useLocalSearchParams, Stack } from 'expo-router';
-import { Clock } from 'lucide-react-native';
+import { Clock, Share2 } from 'lucide-react-native';
 import { colors, spacing } from '../../constants/theme';
 import { sharedStyles } from '../../constants/styles';
 import { useMarketState, toUiMarket } from '../../../lib/markets-onchain';
-import { TradePanel } from '../../components/TradePanel';
+import { HybridTradePanel } from '../../components/HybridTradePanel';
 import { PriceBar } from '../../components/PriceBar';
 import { Badge } from '../../components/Badge';
 import { Loader } from '../../components/EmptyState';
@@ -20,6 +20,7 @@ export default function MarketDetailScreen() {
 
   const { state, isLoading } = useMarketState(isValid ? address : undefined);
   const [meta, setMeta] = useState<Meta>({});
+  const [infoOpen, setInfoOpen] = useState(false);
 
   useEffect(() => {
     if (!isValid) return;
@@ -31,7 +32,7 @@ export default function MarketDetailScreen() {
       .then((r) => r.json())
       .then((data) => setMeta(data.meta?.[address.toLowerCase()] ?? {}))
       .catch(() => setMeta({}));
-  }, [address]);
+  }, [address, isValid]);
 
   if (!isValid) {
     return (
@@ -51,7 +52,7 @@ export default function MarketDetailScreen() {
 
   const market = toUiMarket(state, meta);
   const yesPct = Math.round(market.outcomes[0].probability * 100);
-  const noPct  = 100 - yesPct;
+  const noPct = 100 - yesPct;
 
   const closesAtMs = Number(state.closesAt) * 1000;
   const closesIn = closesAtMs - Date.now();
@@ -59,48 +60,85 @@ export default function MarketDetailScreen() {
     ? `Closes in ${Math.ceil(closesIn / (1000 * 60 * 60 * 24))}d`
     : 'Closed';
 
+  const shareMarket = () => {
+    Share.share({ message: `${market.title}\n${env.API_BASE_URL}/markets/${address}` });
+  };
+
   return (
     <>
       <Stack.Screen options={{ title: market.category }} />
       <ScrollView style={sharedStyles.container} contentContainerStyle={{ padding: spacing.s4, gap: spacing.s4 }}>
         <View style={{ gap: spacing.s2 }}>
-          <View style={[sharedStyles.row, { gap: spacing.s2, flexWrap: 'wrap', marginBottom: spacing.s2 }]}>
-            <Badge label={market.category} tone="accent" />
-            {state.resolved ? (
-              <Badge label={`Resolved: ${state.winningOutcome === 0 ? 'YES' : 'NO'}`} tone="positive" />
-            ) : (
-              <View style={[sharedStyles.row, { gap: 4 }]}>
-                <Clock size={11} color={colors.textMuted} />
-                <Text style={{ color: colors.textMuted, fontSize: 11 }}>{closesText}</Text>
-              </View>
-            )}
+          <View style={[sharedStyles.row, { gap: spacing.s2, flexWrap: 'wrap', justifyContent: 'space-between' }]}>
+            <View style={[sharedStyles.row, { gap: spacing.s2, flexWrap: 'wrap', flex: 1 }]}>
+              <Badge label={market.category} tone="accent" />
+              {state.resolved ? (
+                <Badge label={`Resolved: ${state.winningOutcome === 0 ? 'YES' : 'NO'}`} tone="positive" />
+              ) : (
+                <View style={[sharedStyles.row, { gap: 4 }]}>
+                  <Clock size={11} color={colors.textMuted} />
+                  <Text style={{ color: colors.textMuted, fontSize: 11 }}>{closesText}</Text>
+                </View>
+              )}
+            </View>
+            <Pressable onPress={shareMarket} style={styles.shareBtn}>
+              <Share2 size={14} color={colors.textMuted} />
+            </Pressable>
           </View>
 
           <Text style={styles.title}>{market.title}</Text>
           {market.subtitle ? <Text style={styles.subtitle}>{market.subtitle}</Text> : null}
+          {meta.agent_handle ? (
+            <Text style={styles.agent}>Proposed by {meta.agent_handle}</Text>
+          ) : null}
         </View>
 
         <View style={[sharedStyles.card, { gap: spacing.s3 }]}>
           <Text style={styles.sectionLabel}>Implied probability</Text>
           <View style={[sharedStyles.row, { gap: spacing.s5 }]}>
             <Probability label="YES" pct={yesPct} color={colors.positive} />
-            <Probability label="NO"  pct={noPct}  color={colors.negative} />
+            <Probability label="NO" pct={noPct} color={colors.negative} />
           </View>
           <PriceBar yesPct={yesPct} />
         </View>
 
-        <TradePanel
+        <HybridTradePanel
           marketAddress={address}
+          marketId={market.id}
+          marketTitle={market.title}
+          category={market.category}
           yesPct={yesPct}
           noPct={noPct}
           resolved={state.resolved}
         />
 
+        <Pressable onPress={() => setInfoOpen((v) => !v)} style={[sharedStyles.card, sharedStyles.rowBetween]}>
+          <Text style={styles.sectionLabel}>Market details</Text>
+          <Text style={{ color: colors.accentBright, fontSize: 12 }}>{infoOpen ? 'Hide' : 'Show'}</Text>
+        </Pressable>
+
+        {infoOpen && (
+          <View style={[sharedStyles.card, { gap: spacing.s3 }]}>
+            <Text style={{ color: colors.textDim, fontSize: 14, lineHeight: 20 }}>
+              {market.subtitle || 'Resolves via protocol Resolver agent across independent data sources.'}
+            </Text>
+            <Text style={styles.metaLine}>Category: {market.category}</Text>
+            <Text style={styles.metaLine}>
+              Trading: Instant (AMM on-chain) + Limit orders (CLOB off-chain)
+            </Text>
+            {market.category === 'Football' && (
+              <Text style={styles.metaLine}>
+                FIFA World Cup 2026 markets use official match results (90 min + stoppage).
+              </Text>
+            )}
+          </View>
+        )}
+
         <View style={[sharedStyles.card, { gap: spacing.s3 }]}>
           <Text style={styles.sectionLabel}>Onchain stats</Text>
           <Stat k="YES reserves" v={(Number(state.yesReserves) / 1e6).toFixed(2) + ' USDC'} />
-          <Stat k="NO reserves"  v={(Number(state.noReserves) / 1e6).toFixed(2) + ' USDC'} />
-          <Stat k="Market addr"  v={`${address.slice(0, 6)}…${address.slice(-4)}`} />
+          <Stat k="NO reserves" v={(Number(state.noReserves) / 1e6).toFixed(2) + ' USDC'} />
+          <Stat k="Market addr" v={`${address.slice(0, 6)}…${address.slice(-4)}`} />
         </View>
       </ScrollView>
     </>
@@ -120,9 +158,7 @@ function Stat({ k, v }: { k: string; v: string }) {
   return (
     <View style={sharedStyles.rowBetween}>
       <Text style={{ color: colors.textMuted, fontSize: 13 }}>{k}</Text>
-      <Text style={{
-        color: colors.text, fontSize: 13, fontFamily: 'JetBrainsMono', fontWeight: '600'
-      }}>{v}</Text>
+      <Text style={{ color: colors.text, fontSize: 13, fontFamily: 'JetBrainsMono', fontWeight: '600' }}>{v}</Text>
     </View>
   );
 }
@@ -131,11 +167,8 @@ const styles = StyleSheet.create({
   center: { justifyContent: 'center', alignItems: 'center' },
   title: { color: colors.text, fontSize: 22, fontWeight: '800', lineHeight: 28 },
   subtitle: { color: colors.textDim, fontSize: 14, lineHeight: 20 },
-  sectionLabel: {
-    color: colors.textFaint,
-    fontSize: 11,
-    fontWeight: '600',
-    letterSpacing: 1.2,
-    textTransform: 'uppercase'
-  }
+  agent: { color: colors.accentBright, fontSize: 13, marginTop: 4 },
+  sectionLabel: { color: colors.textFaint, fontSize: 11, fontWeight: '600', letterSpacing: 1.2, textTransform: 'uppercase' },
+  metaLine: { color: colors.textMuted, fontSize: 13, lineHeight: 18 },
+  shareBtn: { padding: spacing.s2 }
 });
