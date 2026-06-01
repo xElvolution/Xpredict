@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAccount, useChainId, useSwitchChain } from 'wagmi';
 import { usePrivy } from '@privy-io/react-auth';
@@ -58,7 +58,7 @@ function loadTheme(): 'dark' | 'light' {
   return (localStorage.getItem('xpredict.theme') as 'dark' | 'light') ?? 'dark';
 }
 
-export default function SettingsPage() {
+function SettingsPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { authenticated, user, ready } = usePrivy();
@@ -763,5 +763,21 @@ function NetworkOption({
         )}
       </div>
     </div>
+  );
+}
+
+export default function SettingsPage() {
+  return (
+    <Suspense
+      fallback={
+        <section className="section" style={{ paddingTop: 'calc(var(--nav-h) + var(--s-10))' }}>
+          <div className="container" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
+            Loading settings…
+          </div>
+        </section>
+      }
+    >
+      <SettingsPageInner />
+    </Suspense>
   );
 }

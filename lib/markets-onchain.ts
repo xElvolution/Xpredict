@@ -82,7 +82,7 @@ export function useMarketState(address?: `0x${string}`) {
       noReserves:     (noReserves.result as bigint) ?? 0n,
       resolved:       (resolved.result as boolean) ?? false,
       finalized:      (finalized.result as boolean) ?? false,
-      winningOutcome: Number((winningOutcome.result as bigint) ?? 0n)
+      winningOutcome: Number(winningOutcome.result ?? 0)
     };
   }, [address, data]);
 

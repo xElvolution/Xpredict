@@ -38,8 +38,7 @@ export function Providers({ children }: { children: ReactNode }) {
         loginMethods: ['email', 'wallet', 'google', 'twitter'],
         embeddedWallets: {
           createOnLogin: 'users-without-wallets',
-          requireUserPasswordOnCreate: false,
-          noPromptOnSignature: false
+          requireUserPasswordOnCreate: false
         },
         defaultChain: xLayerTestnet,
         supportedChains: [xLayer, xLayerTestnet]
