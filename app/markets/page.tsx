@@ -48,7 +48,7 @@ export default function MarketsPage() {
 
         {/* Controls */}
         <div
-          className="card"
+          className="card mkts-controls"
           style={{
             padding: 'var(--s-4)',
             marginBottom: 'var(--s-8)',

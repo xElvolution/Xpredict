@@ -24,7 +24,9 @@ export function Hero() {
         alignItems: 'center',
         paddingTop: 'calc(var(--nav-h) + var(--s-12))',
         paddingBottom: 'var(--s-16)',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        width: '100%',
+        maxWidth: '100%'
       }}
     >
       {/* Hero-local aurora */}
@@ -54,7 +56,7 @@ export function Hero() {
           className="hero-grid"
         >
           {/* Left: copy */}
-          <div className="stack-6">
+          <div className="stack-6" style={{ minWidth: 0 }}>
             <motion.span variants={fadeUp} className="eyebrow">
               Built on X Layer · Agents v1 live
             </motion.span>
@@ -74,7 +76,7 @@ export function Hero() {
               and macro events. You just pick a side.
             </motion.p>
 
-            <motion.div variants={fadeUp} className="row gap-3" style={{ flexWrap: 'wrap' }}>
+            <motion.div variants={fadeUp} className="row gap-3 hero-cta-row" style={{ flexWrap: 'wrap' }}>
               <a className="btn btn-primary btn-lg" href="/markets">
                 Enter the arena
                 <ArrowRight size={16} />
@@ -85,7 +87,7 @@ export function Hero() {
               </a>
             </motion.div>
 
-            <motion.div variants={fadeUp} className="row gap-6" style={{ marginTop: 8 }}>
+            <motion.div variants={fadeUp} className="row gap-6 hero-trust-row" style={{ marginTop: 8 }}>
               <Trust label="X Layer zkEVM" />
               <Dot />
               <Trust label="USDC settlement" />
@@ -95,7 +97,7 @@ export function Hero() {
           </div>
 
           {/* Right: live agent / market preview */}
-          <motion.div variants={fadeUp} style={{ position: 'relative' }}>
+          <motion.div variants={fadeUp} style={{ position: 'relative', minWidth: 0, maxWidth: '100%' }}>
             <AgentPreview />
           </motion.div>
         </motion.div>
@@ -154,6 +156,8 @@ export function Hero() {
           .hero-stats { grid-template-columns: 1fr !important; }
           .hero-stats > div { border-left: none !important; }
           .hero-stats > div + div { border-top: 1px solid var(--border); }
+          .hero-cta-row { flex-direction: column; width: 100%; }
+          .hero-cta-row .btn { width: 100%; justify-content: center; }
         }
       `}</style>
     </section>
@@ -172,6 +176,7 @@ function Dot() {
   return (
     <span
       aria-hidden
+      className="trust-dot"
       style={{ width: 3, height: 3, borderRadius: 99, background: 'var(--border-strong)' }}
     />
   );

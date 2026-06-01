@@ -21,8 +21,8 @@ export function SlipFab() {
       aria-label="Open slip"
       style={{
         position: 'fixed',
-        right: 'var(--s-5)',
-        bottom: 'max(var(--s-5), env(safe-area-inset-bottom))',
+        right: 'max(var(--s-4), env(safe-area-inset-right))',
+        bottom: 'max(var(--s-4), env(safe-area-inset-bottom))',
         zIndex: 80,
         padding: 'var(--s-3) var(--s-5)',
         background: 'var(--accent)',

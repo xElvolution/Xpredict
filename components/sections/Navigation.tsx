@@ -33,12 +33,12 @@ export function Navigation() {
   return (
     <nav className={clsx('nav', scrolled && 'nav-scrolled')}>
       <div className="nav-inner">
-        <Link href="/" className="row gap-2" aria-label="XPredict home">
-          <Image src="/logo.png" alt="XPredict" width={26} height={26} style={{ borderRadius: 6 }} />
-          <span style={{ fontWeight: 700, letterSpacing: '-0.02em', fontSize: 16 }}>
+        <Link href="/" className="row gap-2 nav-brand" aria-label="XPredict home" style={{ minWidth: 0, flexShrink: 1 }}>
+          <Image src="/logo.png" alt="XPredict" width={26} height={26} style={{ borderRadius: 6, flexShrink: 0 }} />
+          <span className="nav-brand-text">
             XPredict
           </span>
-          <span className="badge badge-accent nav-chain-badge" style={{ marginLeft: 6 }}>X Layer</span>
+          <span className="badge badge-accent nav-chain-badge hide-on-mobile" style={{ marginLeft: 6 }}>X Layer</span>
         </Link>
 
         <div className="nav-links">
@@ -56,7 +56,7 @@ export function Navigation() {
           })}
         </div>
 
-        <div className="row gap-2">
+        <div className="row gap-2 nav-actions">
           <ConnectButton compact />
           <button
             className="btn-icon"
@@ -102,9 +102,6 @@ export function Navigation() {
       <style jsx>{`
         @media (max-width: 768px) {
           [data-mobile-toggle] { display: inline-flex !important; }
-        }
-        @media (max-width: 480px) {
-          .nav-chain-badge { display: none !important; }
         }
       `}</style>
     </nav>

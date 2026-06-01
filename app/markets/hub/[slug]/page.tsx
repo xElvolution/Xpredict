@@ -68,7 +68,7 @@ export default function CategoryHubPage({ params }: { params: Promise<{ slug: st
             <Link href="/create" className="btn btn-primary">Propose a market</Link>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 'var(--s-5)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: 'var(--s-5)' }} className="hub-grid">
             {filtered.map((m) => (
               <MarketCard key={m.id} market={m} />
             ))}

@@ -34,13 +34,7 @@ export function Footer() {
   return (
     <footer style={{ borderTop: '1px solid var(--border)', marginTop: 'var(--s-24)' }}>
       <div className="container" style={{ padding: 'var(--s-16) var(--s-6) var(--s-10)' }}>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '1.4fr repeat(3, 1fr)',
-            gap: 'var(--s-10)'
-          }}
-        >
+        <div className="footer-grid">
           <div className="stack-4">
             <div className="row gap-2">
               <Mark />
@@ -96,11 +90,11 @@ export function Footer() {
 
         <div className="divider" style={{ margin: 'var(--s-10) 0' }} />
 
-        <div className="row" style={{ justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+        <div className="footer-bottom">
           <div className="mono" style={{ fontSize: 12, color: 'var(--text-faint)' }}>
             © 2026 XPredict · Built for OKX XCup · Not financial advice
           </div>
-          <div className="row gap-4">
+          <div className="row gap-4 footer-bottom-links">
             <a className="nav-link" href="#" style={{ padding: 0, fontSize: 13 }}>Terms</a>
             <a className="nav-link" href="#" style={{ padding: 0, fontSize: 13 }}>Privacy</a>
             <a className="nav-link" href="#" style={{ padding: 0, fontSize: 13 }}>Discord</a>

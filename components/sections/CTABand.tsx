@@ -5,10 +5,9 @@ export function CTABand() {
     <section className="section">
       <div className="container">
         <div
-          className="card card-glow"
+          className="card card-glow cta-band-card"
           style={{
             position: 'relative',
-            padding: 'var(--s-16) var(--s-10)',
             textAlign: 'center',
             overflow: 'hidden',
             borderColor: 'var(--accent-ring)'

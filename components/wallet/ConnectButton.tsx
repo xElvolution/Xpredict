@@ -33,7 +33,8 @@ export function ConnectButton({ compact = false }: { compact?: boolean }) {
         onClick={login}
       >
         <Wallet size={14} />
-        Connect Wallet
+        <span className="connect-label-full">Connect Wallet</span>
+        <span className="connect-label-short">Connect</span>
       </button>
     );
   }

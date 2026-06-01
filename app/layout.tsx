@@ -76,7 +76,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="noise" aria-hidden />
         <Providers>
           <Navigation />
-          <main>{children}</main>
+          <main className="site-main">{children}</main>
           <Footer />
         </Providers>
       </body>

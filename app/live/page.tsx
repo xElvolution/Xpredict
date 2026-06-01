@@ -62,7 +62,7 @@ export default function LivePage() {
 
         {/* Filters + controls */}
         <div
-          className="card"
+          className="card live-controls"
           style={{
             padding: 'var(--s-3)',
             marginBottom: 'var(--s-6)',

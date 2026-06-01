@@ -117,6 +117,8 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  width: 100%;
+  overflow-x: clip;
 }
 
 body {
@@ -127,7 +129,15 @@ body {
   font-weight: 400;
   line-height: 1.6;
   min-height: 100vh;
-  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+.site-main {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 img, svg, video {
@@ -265,6 +275,21 @@ p {
   max-width: var(--container);
   margin: 0 auto;
   padding: 0 var(--s-6);
+  min-width: 0;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.4fr repeat(3, 1fr);
+  gap: var(--s-10);
+}
+
+.footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .section {
@@ -493,6 +518,20 @@ p {
   align-items: center;
   justify-content: space-between;
   gap: var(--s-8);
+  min-width: 0;
+}
+
+.nav-brand-text {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-size: 16px;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  flex-shrink: 0;
 }
 
 .nav-links {
@@ -734,8 +773,22 @@ p {
   .section { padding: var(--s-16) 0; }
   .grid-3 { grid-template-columns: 1fr; }
   .nav-links { display: none; }
+  .nav-inner { gap: var(--s-2); padding: 0 var(--s-4); }
+  .nav-brand-text { font-size: 15px; }
   .feed-row { grid-template-columns: 72px 1fr; }
   .feed-row > :last-child { grid-column: 1 / -1; text-align: right; }
+  .row { flex-wrap: wrap; }
+  .footer-grid { grid-template-columns: 1fr 1fr; gap: var(--s-8); }
+  .footer-grid > :first-child { grid-column: 1 / -1; }
+  .footer-bottom { flex-direction: column; align-items: flex-start; }
+  .footer-bottom-links { flex-wrap: wrap; gap: var(--s-3); }
+  .mkts-controls { grid-template-columns: 1fr !important; }
+  .live-controls { grid-template-columns: 1fr !important; }
+  .connect-label-full { display: none !important; }
+  .connect-label-short { display: inline !important; }
+  .hero-trust-row { flex-direction: column !important; align-items: flex-start !important; gap: var(--s-2) !important; }
+  .hero-trust-row .trust-dot { display: none; }
+  h1 { font-size: clamp(2rem, 9vw, 3rem); }
 }
 
 @media (max-width: 640px) {
@@ -759,7 +812,20 @@ p {
   /* Stop horizontal overflow on tables */
   .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
-  /* Slip drawer becomes a bottom sheet feel by default — already full width */
+  .footer-grid { grid-template-columns: 1fr; gap: var(--s-6); }
+  .profile-stats { grid-template-columns: repeat(2, 1fr) !important; }
+  .profile-stats > div:nth-child(3),
+  .profile-stats > div:nth-child(4) { border-top: 1px solid var(--border); }
+  .profile-stats > div:nth-child(odd) { border-left: none !important; }
+  .hub-grid { grid-template-columns: 1fr !important; }
+  .cta-band-card { padding: var(--s-10) var(--s-5) !important; }
+  .btn-lg { padding-left: var(--s-4); padding-right: var(--s-4); font-size: 14px; }
+}
+
+.connect-label-short { display: none; }
+
+.cta-band-card {
+  padding: var(--s-16) var(--s-10);
 }
 
 /* iPhone safe-area insets (notch / home indicator) */

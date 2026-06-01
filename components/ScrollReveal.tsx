@@ -15,11 +15,11 @@ const PRESETS: Record<Preset, Variants> = {
     show:   { opacity: 1, transition: { duration: 0.8, ease: 'easeOut' } }
   },
   slideLeft: {
-    hidden: { opacity: 0, x: -50 },
+    hidden: { opacity: 0, x: -24 },
     show:   { opacity: 1, x: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] } }
   },
   slideRight: {
-    hidden: { opacity: 0, x: 50 },
+    hidden: { opacity: 0, x: 24 },
     show:   { opacity: 1, x: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] } }
   },
   scale: {
@@ -56,6 +56,7 @@ export function ScrollReveal({
       viewport={{ once, amount, margin: '-60px 0px' }}
       transition={{ delay }}
       className={className}
+      style={{ overflowX: 'clip', maxWidth: '100%' }}
     >
       {children}
     </motion.div>
