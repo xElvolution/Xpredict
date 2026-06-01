@@ -69,7 +69,8 @@ async function deployApprovedMarket(
     subtitle: meta.subtitle,
     agent_handle: meta.agent_handle,
     external_id: meta.external_id,
-    trending: false
+    trending: false,
+    hidden: false
   });
 
   return marketAddress;

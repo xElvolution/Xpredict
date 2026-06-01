@@ -178,7 +178,8 @@ async function run() {
     subtitle: draft.subtitle,
     agent_handle: '@curator.ai',
     external_id: draft.externalId,
-    trending: false
+    trending: false,
+    hidden: false
   });
 
   await logAgentAction('curator', 'market_created', {

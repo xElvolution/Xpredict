@@ -86,21 +86,23 @@ export async function getMarketMetaBatch(addresses: string[]): Promise<Record<st
 export async function upsertMarketMeta(meta: MarketMeta): Promise<void> {
   const db = getDb();
   await db.query(
-    `INSERT INTO market_meta (address, category, subtitle, agent_handle, external_id, trending)
-     VALUES ($1, $2, $3, $4, $5, $6)
+    `INSERT INTO market_meta (address, category, subtitle, agent_handle, external_id, trending, hidden)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
      ON CONFLICT (address) DO UPDATE SET
        category     = EXCLUDED.category,
        subtitle     = EXCLUDED.subtitle,
        agent_handle = EXCLUDED.agent_handle,
        external_id  = EXCLUDED.external_id,
-       trending     = EXCLUDED.trending`,
+       trending     = EXCLUDED.trending,
+       hidden       = EXCLUDED.hidden`,
     [
       meta.address.toLowerCase(),
       meta.category,
       meta.subtitle,
       meta.agent_handle,
       meta.external_id,
-      meta.trending
+      meta.trending,
+      meta.hidden
     ]
   );
 }
