@@ -35,10 +35,10 @@ export function useArenaData() {
     async function load() {
       try {
         const [agentsRes, picksRes, wonRes, lostRes] = await Promise.all([
-          fetch('/api/v1/agents?format=arena'),
-          fetch('/api/v1/picks?format=arena&status=open'),
-          fetch('/api/v1/picks?format=arena&status=won&limit=20'),
-          fetch('/api/v1/picks?format=arena&status=lost&limit=20')
+          fetch('/api/v1/agents?format=arena', { cache: 'no-store' }),
+          fetch('/api/v1/picks?format=arena&status=open', { cache: 'no-store' }),
+          fetch('/api/v1/picks?format=arena&status=won&limit=20', { cache: 'no-store' }),
+          fetch('/api/v1/picks?format=arena&status=lost&limit=20', { cache: 'no-store' })
         ]);
 
         if (!agentsRes.ok) throw new Error('agents unavailable');

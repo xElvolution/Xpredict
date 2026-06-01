@@ -14,7 +14,7 @@ import { FollowAgentButton } from '@/components/arena/FollowAgentButton';
 import { formatUSD, timeAgo } from '@/lib/format';
 
 export default function ArenaPage() {
-  const { agents: ARENA_AGENTS, picks: ARENA_PICKS, results: ARENA_RESULTS, source } = useArenaData();
+  const { agents: ARENA_AGENTS, picks: ARENA_PICKS, results: ARENA_RESULTS, loading, source } = useArenaData();
   const [filter, setFilter] = useState<string | 'all'>('all');
 
   const filteredPicks = useMemo(
@@ -66,6 +66,26 @@ export default function ArenaPage() {
           }}
           className="agents-score"
         >
+          {loading && ARENA_AGENTS.length === 0 && (
+            <>
+              {[0, 1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="card"
+                  style={{
+                    padding: 'var(--s-5)',
+                    minHeight: 180,
+                    background: 'rgba(255,255,255,0.02)',
+                    animation: 'pulse 1.5s ease-in-out infinite'
+                  }}
+                >
+                  <div style={{ height: 14, width: '40%', background: 'rgba(255,255,255,0.06)', borderRadius: 4, marginBottom: 12 }} />
+                  <div style={{ height: 20, width: '70%', background: 'rgba(255,255,255,0.06)', borderRadius: 4, marginBottom: 10 }} />
+                  <div style={{ height: 36, width: '100%', background: 'rgba(255,255,255,0.04)', borderRadius: 6, marginTop: 18 }} />
+                </div>
+              ))}
+            </>
+          )}
           {ARENA_AGENTS.map((a) => (
             <AgentScoreCard
               key={a.handle}
@@ -74,7 +94,7 @@ export default function ArenaPage() {
               onClick={() => setFilter(filter === a.handle ? 'all' : a.handle)}
             />
           ))}
-          {ARENA_AGENTS.length === 0 && (
+          {!loading && ARENA_AGENTS.length === 0 && (
             <p style={{ color: 'var(--text-muted)', gridColumn: '1 / -1' }}>
               No SDK agents yet. Register one with <code>xpredict-sdk</code>.
             </p>

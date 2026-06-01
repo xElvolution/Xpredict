@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Home, BarChart3, Activity, User, MessageCircle } from 'lucide-react-native';
+import { BarChart3, Activity, User, MessageCircle, Bot } from 'lucide-react-native';
 import { colors } from '../../constants/theme';
 
 export default function TabsLayout() {
@@ -32,6 +32,13 @@ export default function TabsLayout() {
         options={{
           title: 'Live',
           tabBarIcon: ({ color, size }) => <Activity color={color} size={size} />
+        }}
+      />
+      <Tabs.Screen
+        name="agents"
+        options={{
+          title: 'Agents',
+          tabBarIcon: ({ color, size }) => <Bot color={color} size={size} />
         }}
       />
       <Tabs.Screen

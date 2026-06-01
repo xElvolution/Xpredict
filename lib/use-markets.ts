@@ -9,6 +9,7 @@ type MetaMap = Record<string, {
   subtitle?: string;
   agent_handle?: string;
   trending?: boolean;
+  hidden?: boolean;
 }>;
 
 /**
@@ -39,9 +40,10 @@ export function useMarkets() {
       .finally(() => setMetaLoading(false));
   }, [addresses.join(',')]);
 
-  const markets: Market[] = states.map((s) =>
-    toUiMarket(s, meta[s.address.toLowerCase()])
-  );
+  const markets: Market[] = states
+    .map((s) => ({ s, m: meta[s.address.toLowerCase()] }))
+    .filter(({ m }) => !m?.hidden)
+    .map(({ s, m }) => toUiMarket(s, m));
 
   return {
     markets,

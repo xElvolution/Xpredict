@@ -20,7 +20,7 @@ import { chat } from './lib/openai';
 import { sendTransaction, getAgentWallet } from './lib/privy';
 import {
   encodeCreateMarket, encodeApprove, encodeSeedLiquidity,
-  publicClient, getFactoryMarkets
+  publicClient, getFactoryMarkets, getMarketState
 } from './lib/chain';
 import { logAgentAction, upsertMarketMeta } from './lib/db';
 import { processPendingProposals } from './lib/proposals';
@@ -39,6 +39,26 @@ const SEARCH_QUERIES = [
   'crypto bitcoin ethereum price prediction this week',
   'tennis grand slam upcoming matches'
 ];
+
+/**
+ * Normalize a question for fuzzy comparison.
+ * Strips punctuation, lowercases, collapses whitespace.
+ */
+function normalize(q: string): string {
+  return q.toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * Word-overlap similarity (0-1). > 0.6 = "basically the same question".
+ */
+function similarity(a: string, b: string): number {
+  const aw = new Set(normalize(a).split(' ').filter((w) => w.length > 2));
+  const bw = new Set(normalize(b).split(' ').filter((w) => w.length > 2));
+  if (aw.size === 0 || bw.size === 0) return 0;
+  let overlap = 0;
+  for (const w of aw) if (bw.has(w)) overlap++;
+  return overlap / Math.min(aw.size, bw.size);
+}
 
 const SYSTEM_PROMPT = `You are a prediction market curator. Given news about upcoming sports or crypto events,
 draft a single clear Yes/No prediction market question.
@@ -65,12 +85,32 @@ async function run() {
   console.log(`[curator] Processed ${reviewed} SDK proposal(s)`);
 
   // 2. Auto-draft one market from live feeds
-  const query = SEARCH_QUERIES[Math.floor(Math.random() * SEARCH_QUERIES.length)];
+  // Allow env override (FORCE_QUERY) for one-off crypto/category-targeted runs.
+  const query = process.env.FORCE_QUERY || SEARCH_QUERIES[Math.floor(Math.random() * SEARCH_QUERIES.length)];
   console.log(`[curator] Searching: ${query}`);
 
   const searchResults = await tavilySearch(query);
 
-  const raw = await chat(SYSTEM_PROMPT, `Based on these recent events, draft one prediction market:\n\n${searchResults}`);
+  // Read existing open market questions so we don't propose duplicates
+  const existingMarkets = await getFactoryMarkets();
+  console.log(`[curator] ${existingMarkets.length} existing markets`);
+
+  const existingQuestions: string[] = [];
+  for (const addr of existingMarkets) {
+    try {
+      const s = await getMarketState(addr);
+      if (!s.resolved) existingQuestions.push(s.question as string);
+    } catch { /* skip */ }
+  }
+
+  const avoidBlock = existingQuestions.length
+    ? `\n\nIMPORTANT — DO NOT propose any question similar to these existing open markets:\n${existingQuestions.map((q, i) => `  ${i + 1}. ${q}`).join('\n')}\n\nPick a DIFFERENT event or angle.`
+    : '';
+
+  const raw = await chat(
+    SYSTEM_PROMPT,
+    `Based on these recent events, draft one prediction market:\n\n${searchResults}${avoidBlock}`
+  );
 
   let draft: { question: string; subtitle: string; category: string; closesAtDays: number; externalId: string };
   try {
@@ -86,10 +126,13 @@ async function run() {
     return;
   }
 
-  // Check if we already have a market with this externalId
-  // (simple dedup — in production use a proper check)
-  const existingMarkets = await getFactoryMarkets();
-  console.log(`[curator] ${existingMarkets.length} existing markets`);
+  // Local dedup check — even if OpenAI ignored the constraint, we reject duplicates
+  const duplicate = existingQuestions.find((q) => similarity(q, draft.question) >= 0.6);
+  if (duplicate) {
+    console.warn(`[curator] DEDUP: skipping draft "${draft.question}" — too similar to "${duplicate}"`);
+    await logAgentAction('curator', 'dedup_skipped', { draft: draft.question, similar_to: duplicate });
+    return;
+  }
 
   const closesAt = BigInt(Math.floor(Date.now() / 1000) + draft.closesAtDays * 86400);
 

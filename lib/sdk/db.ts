@@ -25,6 +25,7 @@ export async function ensureSdkSchema(): Promise<void> {
       focus         TEXT[] NOT NULL,
       hue           TEXT NOT NULL DEFAULT '#7C3AED',
       status        TEXT NOT NULL DEFAULT 'active',
+      creator       TEXT,
       created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
@@ -74,6 +75,8 @@ export async function ensureSdkSchema(): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_picks_agent ON agent_picks(agent_handle);
     CREATE INDEX IF NOT EXISTS idx_picks_status ON agent_picks(status);
   `);
+  // Idempotent: add creator column to existing tables
+  await db.query(`ALTER TABLE user_agents ADD COLUMN IF NOT EXISTS creator TEXT;`).catch(() => {});
 }
 
 function rowToAgent(row: Record<string, unknown>): UserAgent {
@@ -85,6 +88,7 @@ function rowToAgent(row: Record<string, unknown>): UserAgent {
     focus: row.focus as Category[],
     hue: row.hue as string,
     status: row.status as string,
+    creator: (row.creator as string | null) ?? null,
     created_at: (row.created_at as Date).toISOString()
   };
 }
@@ -132,8 +136,8 @@ export async function createAgent(
   const handle = normalizeHandle(input.handle);
 
   const { rows } = await db.query(
-    `INSERT INTO user_agents (handle, name, bio, style, focus, hue)
-     VALUES ($1, $2, $3, $4, $5, $6)
+    `INSERT INTO user_agents (handle, name, bio, style, focus, hue, creator)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
      RETURNING *`,
     [
       handle,
@@ -141,7 +145,8 @@ export async function createAgent(
       input.bio?.trim() ?? '',
       input.style,
       input.focus,
-      input.hue ?? '#7C3AED'
+      input.hue ?? '#7C3AED',
+      input.creator?.trim() || null
     ]
   );
 
@@ -375,6 +380,7 @@ export function agentToArenaFormat(agent: UserAgent, stats: AgentStats) {
     style: agent.style,
     focus: agent.focus,
     hue: agent.hue,
+    creator: agent.creator,
     record: {
       wins: stats.wins,
       losses: stats.losses,

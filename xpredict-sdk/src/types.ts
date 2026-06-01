@@ -32,6 +32,8 @@ export type CreateAgentInput = {
   style: AgentStyle;
   focus: Category[];
   hue?: string;
+  /** Handle or address of the developer / user deploying this agent. Shown on /agents page. */
+  creator?: string;
 };
 
 export type CreateAgentResponse = {
@@ -48,6 +50,8 @@ export type UserAgent = {
   focus: Category[];
   hue: string;
   status: string;
+  /** Who deployed this agent (e.g. `@elvolution`). Null for system agents. */
+  creator: string | null;
   created_at: string;
 };
 

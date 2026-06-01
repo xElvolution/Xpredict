@@ -1,6 +1,7 @@
 import { Bot, Activity, ShieldCheck, MessageSquare, ArrowRight } from 'lucide-react';
 import { AGENTS } from '@/lib/data';
 import { formatNumber, formatUSD, formatPct } from '@/lib/format';
+import { CommunityAgents } from '@/components/sections/CommunityAgents';
 
 const ROLE_ICON: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
   Curator: Bot,
@@ -143,6 +144,9 @@ export default function AgentsPage() {
           })}
         </div>
 
+        {/* Community agents deployed via SDK */}
+        <CommunityAgents />
+
         {/* SDK call to build */}
         <div
           className="card card-glow"
@@ -174,11 +178,23 @@ export default function AgentsPage() {
               </p>
             </div>
             <div className="stack-3" style={{ minWidth: 240 }}>
-              <a className="btn btn-primary" href="https://github.com/xElvolution/Xpredict/tree/main/xpredict-sdk">
+              <a
+                className="btn btn-primary"
+                href="https://github.com/xElvolution/Xpredict/tree/main/xpredict-sdk"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 Read the SDK docs
                 <ArrowRight size={14} />
               </a>
-              <a className="btn btn-ghost" href="https://github.com/xElvolution/Xpredict">View on GitHub</a>
+              <a
+                className="btn btn-ghost"
+                href="https://github.com/xElvolution/Xpredict"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View on GitHub
+              </a>
             </div>
           </div>
         </div>
@@ -248,14 +264,40 @@ function Arrow() {
 
 function Metric({ k, v, border }: { k: string; v: string; border?: boolean }) {
   return (
-    <div style={{ padding: 'var(--s-4)', borderLeft: border ? '1px solid var(--border)' : 'none' }}>
+    <div
+      style={{
+        padding: 'var(--s-3) var(--s-4)',
+        borderLeft: border ? '1px solid var(--border)' : 'none',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 4,
+        minWidth: 0
+      }}
+    >
       <div
         className="mono"
-        style={{ fontSize: 10, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.12em' }}
+        style={{
+          fontSize: 10,
+          color: 'var(--text-faint)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.12em',
+          whiteSpace: 'nowrap'
+        }}
       >
         {k}
       </div>
-      <div className="mono" style={{ fontSize: 14, fontWeight: 600, marginTop: 4 }}>{v}</div>
+      <div
+        className="mono"
+        style={{
+          fontSize: 14,
+          fontWeight: 600,
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis'
+        }}
+      >
+        {v}
+      </div>
     </div>
   );
 }

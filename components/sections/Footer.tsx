@@ -63,16 +63,33 @@ export function Footer() {
               >
                 {col.title}
               </div>
-              {col.links.map((l) => (
-                <Link
-                  key={l.label}
-                  href={l.href}
-                  className="footer-link"
-                  style={{ fontSize: 14 }}
-                >
-                  {l.label}
-                </Link>
-              ))}
+              {col.links.map((l) => {
+                const isExternal = l.href.startsWith('http');
+                if (isExternal) {
+                  return (
+                    <a
+                      key={l.label}
+                      href={l.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="footer-link"
+                      style={{ fontSize: 14 }}
+                    >
+                      {l.label}
+                    </a>
+                  );
+                }
+                return (
+                  <Link
+                    key={l.label}
+                    href={l.href}
+                    className="footer-link"
+                    style={{ fontSize: 14 }}
+                  >
+                    {l.label}
+                  </Link>
+                );
+              })}
             </div>
           ))}
         </div>

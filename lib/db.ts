@@ -31,6 +31,7 @@ export async function ensureSchema(): Promise<void> {
       agent_handle  TEXT NOT NULL,
       external_id   TEXT,
       trending      BOOLEAN DEFAULT FALSE,
+      hidden        BOOLEAN DEFAULT FALSE,
       created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
@@ -49,6 +50,8 @@ export async function ensureSchema(): Promise<void> {
       created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
   `);
+  // Idempotent column addition for older schemas
+  await db.query(`ALTER TABLE market_meta ADD COLUMN IF NOT EXISTS hidden BOOLEAN DEFAULT FALSE;`).catch(() => {});
 }
 
 export type MarketMeta = {
@@ -58,6 +61,7 @@ export type MarketMeta = {
   agent_handle: string;
   external_id: string | null;
   trending: boolean;
+  hidden: boolean;
 };
 
 export async function getMarketMeta(address: string): Promise<MarketMeta | null> {

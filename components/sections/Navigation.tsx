@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Menu, X, Plus } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { clsx } from 'clsx';
 import { ConnectButton } from '@/components/wallet/ConnectButton';
 
@@ -57,10 +57,6 @@ export function Navigation() {
         </div>
 
         <div className="row gap-2">
-          <Link href="/create" className="btn btn-ghost btn-sm nav-create-btn" style={{ display: 'inline-flex' }}>
-            <Plus size={14} />
-            Create
-          </Link>
           <ConnectButton compact />
           <button
             className="btn-icon"
@@ -93,10 +89,6 @@ export function Navigation() {
                 {l.label}
               </Link>
             ))}
-            <Link href="/create" className="nav-link" style={{ width: '100%' }}>
-              <Plus size={14} style={{ marginRight: 6, verticalAlign: 'middle' }} />
-              Create market
-            </Link>
             <Link href="/profile" className="nav-link" style={{ width: '100%' }}>
               Profile
             </Link>
@@ -110,7 +102,6 @@ export function Navigation() {
       <style jsx>{`
         @media (max-width: 768px) {
           [data-mobile-toggle] { display: inline-flex !important; }
-          .nav-create-btn { display: none !important; }
         }
         @media (max-width: 480px) {
           .nav-chain-badge { display: none !important; }

@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowUpRight, Flame, Users } from 'lucide-react';
-import { MARKETS, type Market } from '@/lib/data';
+import { ArrowUpRight, Flame, Users, Loader2 } from 'lucide-react';
+import { type Market } from '@/lib/data';
+import { useMarkets } from '@/lib/use-markets';
 import { formatUSD, formatNumber, timeUntil } from '@/lib/format';
 import { SlipAddButton } from '@/components/slip/SlipAddButton';
 
@@ -13,7 +14,12 @@ const fadeUp = {
 };
 
 export function FeaturedMarkets() {
-  const featured = MARKETS.slice(0, 6);
+  const { markets, isLoading } = useMarkets();
+  // Sort by liquidity (proxy for activity) then take top 6
+  const featured = markets
+    .filter((m) => !m.resolved)
+    .sort((a, b) => b.liquidity - a.liquidity)
+    .slice(0, 6);
 
   return (
     <section className="section">
@@ -32,32 +38,57 @@ export function FeaturedMarkets() {
           </Link>
         </div>
 
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-            gap: 'var(--s-6)'
-          }}
-          className="markets-grid"
-        >
-          {featured.map((m, i) => (
-            <motion.div
-              key={m.id}
-              custom={i}
-              variants={fadeUp}
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true, margin: '-80px' }}
-            >
-              <MarketCard market={m} />
-            </motion.div>
-          ))}
-        </div>
+        {isLoading ? (
+          <div
+            style={{
+              padding: 'var(--s-10)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--s-3)',
+              color: 'var(--text-muted)', fontSize: 13
+            }}
+          >
+            <Loader2 size={16} className="spin" />
+            Loading markets from X Layer…
+          </div>
+        ) : featured.length === 0 ? (
+          <div
+            style={{
+              padding: 'var(--s-10)',
+              textAlign: 'center',
+              color: 'var(--text-muted)', fontSize: 14
+            }}
+          >
+            No live markets yet — the Curator agent is drafting some now. Check back in a few minutes.
+          </div>
+        ) : (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+              gap: 'var(--s-6)'
+            }}
+            className="markets-grid"
+          >
+            {featured.map((m, i) => (
+              <motion.div
+                key={m.id}
+                custom={i}
+                variants={fadeUp}
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true, margin: '-80px' }}
+              >
+                <MarketCard market={m} />
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
 
       <style>{`
         @media (max-width: 1024px) { .markets-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }
         @media (max-width: 680px)  { .markets-grid { grid-template-columns: 1fr !important; } }
+        .spin { animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
     </section>
   );

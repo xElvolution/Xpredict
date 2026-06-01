@@ -22,6 +22,7 @@ export type UserAgent = {
   focus: Category[];
   hue: string;
   status: string;
+  creator: string | null;
   created_at: string;
 };
 
@@ -73,6 +74,7 @@ export type CreateAgentInput = {
   style: AgentStyle;
   focus: Category[];
   hue?: string;
+  creator?: string;
 };
 
 export type ProposeMarketInput = {

@@ -72,7 +72,7 @@ export function SlipProvider({ children }: { children: ReactNode }) {
       next[idx] = leg;       // replace side on same market
       return next;
     });
-    setOpen(true);
+    // Drawer no longer auto-opens — user must click the Slip FAB.
   };
 
   const removeLeg = (id: string) =>

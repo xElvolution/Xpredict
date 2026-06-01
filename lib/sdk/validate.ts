@@ -46,7 +46,8 @@ export function validateCreateAgent(body: unknown): CreateAgentInput | string {
     bio: typeof b.bio === 'string' ? b.bio.trim().slice(0, 500) : '',
     style: b.style as CreateAgentInput['style'],
     focus: b.focus as CreateAgentInput['focus'],
-    hue: typeof b.hue === 'string' ? b.hue : undefined
+    hue: typeof b.hue === 'string' ? b.hue : undefined,
+    creator: typeof b.creator === 'string' ? b.creator.trim().slice(0, 80) : undefined
   };
 }
 

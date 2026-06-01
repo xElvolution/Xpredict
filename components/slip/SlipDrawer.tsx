@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  ChevronDown, ChevronRight, Copy, Download, Layers, Receipt, Share2, Sparkles, Trash2, Wallet, X
+  Check, ChevronDown, ChevronRight, Copy, Download, Layers, Link2, Receipt, Send,
+  Share2, Sparkles, Trash2, Wallet, X
 } from 'lucide-react';
 import { useSlip } from './SlipContext';
 import { formatUSD } from '@/lib/format';
@@ -20,10 +21,10 @@ export function SlipFab() {
       aria-label="Open slip"
       style={{
         position: 'fixed',
-        right: 20,
-        bottom: 'max(20px, env(safe-area-inset-bottom))',
+        right: 'var(--s-5)',
+        bottom: 'max(var(--s-5), env(safe-area-inset-bottom))',
         zIndex: 80,
-        padding: '12px 18px',
+        padding: 'var(--s-3) var(--s-5)',
         background: 'var(--accent)',
         color: '#0A0A0F',
         border: '1px solid rgba(255,255,255,0.22)',
@@ -66,6 +67,7 @@ export function SlipDrawer() {
   const [shareCode, setShareCode] = useState('');
   const [showShareModal, setShowShareModal] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [copiedKind, setCopiedKind] = useState<'code' | 'link' | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -89,11 +91,31 @@ export function SlipDrawer() {
 
   const copyCode = () => {
     navigator.clipboard.writeText(shareCode);
+    setCopiedKind('code');
+    setTimeout(() => setCopiedKind(null), 1800);
   };
 
   const copyLink = () => {
     const url = `${window.location.origin}/slip/${shareCode}`;
     navigator.clipboard.writeText(url);
+    setCopiedKind('link');
+    setTimeout(() => setCopiedKind(null), 1800);
+  };
+
+  const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/slip/${shareCode}` : '';
+  const shareText = `My XPredict parlay · ×${combinedOdds.toFixed(2)} combined odds · ${legs.length} ${legs.length === 1 ? 'pick' : 'picks'}. Load it:`;
+
+  const openTwitterShare = () => {
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+  const openTelegramShare = () => {
+    const url = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+  const openWhatsappShare = () => {
+    const url = `https://wa.me/?text=${encodeURIComponent(`${shareText} ${shareUrl}`)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -167,33 +189,34 @@ export function SlipDrawer() {
                   </div>
                 </div>
               </div>
-              <div className="row gap-1">
+              <div className="slip-header-actions">
                 {legs.length > 0 && (
                   <>
                     <button
                       onClick={handleShare}
-                      className="btn-icon"
+                      className="slip-header-btn"
                       aria-label="Share slip"
-                      style={{ width: 32, height: 32 }}
+                      title="Share slip"
                       disabled={generating}
                     >
                       <Share2 size={14} />
                     </button>
                     <button
                       onClick={clear}
-                      className="btn-icon"
+                      className="slip-header-btn danger"
                       aria-label="Clear slip"
-                      style={{ width: 32, height: 32 }}
+                      title="Clear all legs"
                     >
                       <Trash2 size={14} />
                     </button>
+                    <span className="slip-header-divider" aria-hidden />
                   </>
                 )}
                 <button
                   onClick={close}
-                  className="btn-icon"
+                  className="slip-header-btn"
                   aria-label="Close slip"
-                  style={{ width: 32, height: 32 }}
+                  title="Close"
                 >
                   <X size={14} />
                 </button>
@@ -380,6 +403,41 @@ export function SlipDrawer() {
                   backdrop-filter: none;
                 }
               }
+
+              /* ---------- Header action cluster ---------- */
+              :global(.slip-header-actions) {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 4px;
+                background: rgba(255, 255, 255, 0.03);
+                border: 1px solid var(--border);
+                border-radius: var(--r-md);
+              }
+              :global(.slip-header-btn) {
+                width: 32px; height: 32px;
+                display: inline-flex; align-items: center; justify-content: center;
+                background: transparent;
+                border: none;
+                border-radius: var(--r-sm);
+                color: var(--text-muted);
+                cursor: pointer;
+                transition: background 140ms ease, color 140ms ease;
+              }
+              :global(.slip-header-btn:hover) {
+                background: rgba(255, 255, 255, 0.07);
+                color: var(--text);
+              }
+              :global(.slip-header-btn.danger:hover) {
+                background: rgba(255, 77, 109, 0.10);
+                color: var(--negative);
+              }
+              :global(.slip-header-btn:disabled) { opacity: 0.45; cursor: not-allowed; }
+              :global(.slip-header-divider) {
+                width: 1px; height: 18px;
+                background: var(--border);
+                margin: 0 2px;
+              }
             `}</style>
           </motion.aside>
 
@@ -404,93 +462,139 @@ export function SlipDrawer() {
                 }}
               >
                 <motion.div
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.9, opacity: 0 }}
+                  initial={{ scale: 0.96, opacity: 0, y: 8 }}
+                  animate={{ scale: 1, opacity: 1, y: 0 }}
+                  exit={{ scale: 0.96, opacity: 0, y: 8 }}
+                  transition={{ type: 'spring', stiffness: 380, damping: 32 }}
                   onClick={(e) => e.stopPropagation()}
                   className="card"
                   style={{
                     width: '100%',
-                    maxWidth: 440,
-                    padding: 'var(--s-6)',
+                    maxWidth: 460,
+                    padding: 0,
                     background: 'rgba(14, 14, 21, 0.98)',
-                    backdropFilter: 'blur(20px)'
+                    backdropFilter: 'blur(20px)',
+                    overflow: 'hidden'
                   }}
                 >
-                  <div className="stack-5">
-                    <div className="row" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <div>
-                        <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>
-                          Share slip
-                        </h3>
-                        <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-                          Anyone with this code can load your parlay
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => setShowShareModal(false)}
-                        className="btn-icon"
-                        style={{ width: 32, height: 32 }}
-                      >
-                        <X size={14} />
-                      </button>
+                  {/* Header */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      justifyContent: 'space-between',
+                      gap: 'var(--s-4)',
+                      padding: 'var(--s-6)',
+                      borderBottom: '1px solid var(--border)'
+                    }}
+                  >
+                    <div>
+                      <h3 style={{ fontSize: 18, fontWeight: 700, letterSpacing: '-0.01em', marginBottom: 6 }}>
+                        Share your slip
+                      </h3>
+                      <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                        Anyone with this code can load the exact same picks.
+                      </p>
                     </div>
-
-                    <div
+                    <button
+                      onClick={() => setShowShareModal(false)}
+                      aria-label="Close"
                       style={{
+                        width: 32, height: 32, flexShrink: 0,
+                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                         background: 'var(--surface)',
                         border: '1px solid var(--border)',
+                        borderRadius: 'var(--r-sm)',
+                        color: 'var(--text-muted)',
+                        cursor: 'pointer',
+                        transition: 'background 140ms ease'
+                      }}
+                      onMouseOver={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.06)')}
+                      onMouseOut={(e) => (e.currentTarget.style.background = 'var(--surface)')}
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+
+                  {/* Body */}
+                  <div style={{ padding: 'var(--s-6)', display: 'flex', flexDirection: 'column', gap: 'var(--s-6)' }}>
+                    {/* Code hero */}
+                    <div
+                      style={{
+                        background: 'linear-gradient(180deg, rgba(124,58,237,0.12), rgba(124,58,237,0.02))',
+                        border: '1px solid var(--accent-ring)',
                         borderRadius: 'var(--r-md)',
-                        padding: 'var(--s-4)',
+                        padding: 'var(--s-5) var(--s-4)',
                         textAlign: 'center'
                       }}
                     >
                       <div
                         className="mono"
                         style={{
-                          fontSize: 20,
-                          fontWeight: 700,
-                          letterSpacing: '0.08em',
+                          fontSize: 28,
+                          fontWeight: 800,
+                          letterSpacing: '0.14em',
                           color: 'var(--accent-bright)',
-                          marginBottom: 'var(--s-2)'
+                          marginBottom: 6,
+                          textShadow: '0 2px 16px rgba(124,58,237,0.40)'
                         }}
                       >
                         {shareCode}
                       </div>
-                      <div style={{ fontSize: 12, color: 'var(--text-faint)' }}>
-                        {legs.length} {legs.length === 1 ? 'leg' : 'legs'} · ×{combinedOdds.toFixed(2)} odds
+                      <div className="mono" style={{ fontSize: 11, color: 'var(--text-faint)', letterSpacing: '0.12em' }}>
+                        {legs.length} {legs.length === 1 ? 'LEG' : 'LEGS'} · ×{combinedOdds.toFixed(2)} COMBINED
                       </div>
                     </div>
 
-                    <div className="row gap-2">
+                    {/* Copy actions */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--s-3)' }}>
                       <button
                         onClick={copyCode}
                         className="btn btn-primary"
-                        style={{ flex: 1, height: 44 }}
+                        style={{ height: 44, transition: 'background 200ms ease' }}
                       >
-                        <Copy size={14} />
-                        Copy code
+                        {copiedKind === 'code' ? <Check size={14} /> : <Copy size={14} />}
+                        {copiedKind === 'code' ? 'Copied!' : 'Copy code'}
                       </button>
                       <button
                         onClick={copyLink}
                         className="btn btn-ghost"
-                        style={{ flex: 1, height: 44 }}
+                        style={{ height: 44 }}
                       >
-                        <Download size={14} />
-                        Copy link
+                        {copiedKind === 'link' ? <Check size={14} /> : <Link2 size={14} />}
+                        {copiedKind === 'link' ? 'Copied!' : 'Copy link'}
                       </button>
                     </div>
 
-                    <div
-                      style={{
-                        fontSize: 12,
-                        color: 'var(--text-faint)',
-                        textAlign: 'center',
-                        lineHeight: 1.4
-                      }}
-                    >
-                      Share this code with friends. They can paste it in the slip drawer to load the same picks.
+                    {/* Social share */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s-3)', marginTop: 'var(--s-2)' }}>
+                      <div
+                        className="mono"
+                        style={{ fontSize: 10, color: 'var(--text-faint)', letterSpacing: '0.14em', textTransform: 'uppercase' }}
+                      >
+                        Share to
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--s-2)' }}>
+                        <SocialButton label="X" onClick={openTwitterShare} brand="#000" />
+                        <SocialButton label="Telegram" onClick={openTelegramShare} brand="#229ED9" icon={<Send size={14} />} />
+                        <SocialButton label="WhatsApp" onClick={openWhatsappShare} brand="#25D366" />
+                      </div>
                     </div>
+                  </div>
+
+                  {/* Footer */}
+                  <div
+                    style={{
+                      padding: 'var(--s-4) var(--s-6)',
+                      borderTop: '1px solid var(--border)',
+                      background: 'rgba(255,255,255,0.02)',
+                      fontSize: 12,
+                      color: 'var(--text-faint)',
+                      textAlign: 'center',
+                      lineHeight: 1.5
+                    }}
+                  >
+                    Friends paste the code in the slip drawer to load these picks.
                   </div>
                 </motion.div>
               </motion.div>
@@ -704,5 +808,41 @@ function Line({ k, v, mono, highlight, tone }: {
         {v}
       </span>
     </div>
+  );
+}
+
+function SocialButton({
+  label, onClick, brand, icon
+}: { label: string; onClick: () => void; brand: string; icon?: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        height: 40,
+        background: 'var(--surface)',
+        border: '1px solid var(--border-strong)',
+        borderRadius: 'var(--r-md)',
+        color: 'var(--text)',
+        fontSize: 13,
+        fontWeight: 600,
+        cursor: 'pointer',
+        transition: 'all 140ms ease'
+      }}
+      onMouseOver={(e) => {
+        e.currentTarget.style.borderColor = brand;
+        e.currentTarget.style.background = `${brand}1f`;
+      }}
+      onMouseOut={(e) => {
+        e.currentTarget.style.borderColor = 'var(--border-strong)';
+        e.currentTarget.style.background = 'var(--surface)';
+      }}
+    >
+      {icon}
+      {label}
+    </button>
   );
 }
