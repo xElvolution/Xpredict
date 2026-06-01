@@ -13,7 +13,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#0A0A0F"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "android": {
       "package": "app.xpredict.mobile",
       "versionCode": 1,
@@ -21,20 +23,36 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#0A0A0F"
       },
-      "permissions": ["INTERNET"],
+      "permissions": [
+        "INTERNET"
+      ],
       "intentFilters": [
         {
           "action": "VIEW",
-          "data": [{ "scheme": "xpredict" }],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "data": [
+            {
+              "scheme": "xpredict"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         },
         {
           "action": "VIEW",
           "autoVerify": true,
           "data": [
-            { "scheme": "https", "host": "xpredict-nu.vercel.app", "pathPrefix": "/" }
+            {
+              "scheme": "https",
+              "host": "xpredict-nu.vercel.app",
+              "pathPrefix": "/"
+            }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
@@ -63,8 +81,9 @@
         "origin": false
       },
       "eas": {
-        "projectId": "TO_BE_FILLED_BY_EAS_INIT"
+        "projectId": "3b1a33e0-11ad-48ce-af6f-781e6bb86b16"
       }
-    }
+    },
+    "owner": "elvolution"
   }
 }
