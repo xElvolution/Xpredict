@@ -29,8 +29,9 @@ export function ConnectButton({ compact = false }: { compact?: boolean }) {
   if (!authenticated || !isConnected) {
     return (
       <button
+        type="button"
         className={compact ? 'btn btn-primary btn-sm' : 'btn btn-primary'}
-        onClick={login}
+        onClick={() => login()}
       >
         <Wallet size={14} />
         <span className="connect-label-full">Connect Wallet</span>

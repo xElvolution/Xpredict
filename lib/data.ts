@@ -71,7 +71,7 @@ export const MARKETS: Market[] = [
   {
     id: 'mkt_002',
     category: 'Football',
-    title: 'Real Madrid vs Barcelona — Real to win?',
+    title: 'Real Madrid vs Barcelona: Real to win?',
     subtitle: 'El Clásico, June 1 · 90 min including stoppage',
     closesAt: '2026-06-01T20:00:00Z',
     volume: 421_300,

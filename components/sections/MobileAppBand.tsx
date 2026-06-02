@@ -8,7 +8,7 @@ export function MobileAppBand() {
     <section className="section">
       <div className="container">
         <div
-          className="card"
+          className="card mobile-band-card"
           style={{
             padding: 'var(--s-10)',
             position: 'relative',
@@ -108,27 +108,16 @@ export function MobileAppBand() {
                   <ArrowRight size={14} />
                 </a>
               </div>
-
-              <p style={{ fontSize: 12, color: 'var(--text-faint)' }}>
-                Join the waitlist · APK drop announced on{' '}
-                <a
-                  href="https://twitter.com/xpredict"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ color: 'var(--accent-bright)' }}
-                >
-                  @xpredict
-                </a>
-              </p>
             </div>
 
-            {/* Right: phone mockup */}
+            {/* Right: phone mockup (hidden on mobile — redundant when user IS on mobile) */}
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
               style={{ display: 'flex', justifyContent: 'center' }}
+              className="phone-mock-wrap"
             >
               <PhoneMockup />
             </motion.div>
@@ -140,8 +129,12 @@ export function MobileAppBand() {
         @media (max-width: 900px) {
           .mobile-band-grid { grid-template-columns: 1fr !important; }
         }
-        @media (max-width: 560px) {
-          .mobile-feature-grid { grid-template-columns: 1fr !important; }
+        @media (max-width: 768px) {
+          .phone-mock-wrap { display: none !important; }
+          .mobile-band-card { padding: var(--s-8) var(--s-6) !important; }
+          .mobile-band-card :global(.stack-5) { gap: var(--s-5) !important; }
+          .mobile-feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: var(--s-3) !important; margin-top: var(--s-4) !important; }
+          .mobile-feature-grid :global(.feature-body) { display: none !important; }
         }
       `}</style>
     </section>
@@ -164,7 +157,7 @@ function Feature({
         <Icon size={14} color="var(--accent-bright)" />
         <span style={{ fontSize: 13, fontWeight: 600 }}>{label}</span>
       </div>
-      <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.45 }}>{body}</div>
+      <div className="feature-body" style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.45 }}>{body}</div>
     </div>
   );
 }

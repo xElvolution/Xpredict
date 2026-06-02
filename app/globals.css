@@ -257,10 +257,18 @@ p {
 }
 
 .gradient-text {
-  background: linear-gradient(180deg, #FFFFFF 0%, #B6A6FF 60%, #7C3AED 100%);
+  background: linear-gradient(110deg, #FFFFFF 0%, #B6A6FF 35%, #7C3AED 55%, #B6A6FF 75%, #FFFFFF 100%);
+  background-size: 220% 100%;
+  background-position: 0% 50%;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  animation: gradientShine 6s ease-in-out infinite;
+}
+@keyframes gradientShine {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .text-dim   { color: var(--text-dim); }
@@ -371,8 +379,8 @@ p {
 
 .btn-sm {
   height: 36px;
-  padding: 8px 14px;
-  font-size: 13px;
+  padding: 6px 12px;
+  font-size: 12.5px;
   border-radius: var(--r-sm);
 }
 
@@ -383,14 +391,19 @@ p {
 }
 
 .btn-icon {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   padding: 0;
   border-radius: var(--r-md);
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border);
   color: var(--text-dim);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
 }
+.btn-icon > * { display: block; }
 .btn-icon:hover {
   background: rgba(255, 255, 255, 0.06);
   color: var(--text);
@@ -794,7 +807,7 @@ p {
 @media (max-width: 640px) {
   .container { padding: 0 var(--s-4); }
   .grid-2, .grid-4 { grid-template-columns: 1fr; }
-  .btn { height: 48px; }
+  .btn:not(.btn-sm):not(.btn-icon) { height: 48px; }
   h1 { letter-spacing: -0.025em; }
 
   /* Hide desktop-only chrome on phones */
@@ -806,8 +819,8 @@ p {
   /* Section padding tighter on phones */
   .section { padding: var(--s-12) 0; }
 
-  /* Tap targets: anything interactive should be at least 44px */
-  .btn-icon { min-width: 44px; min-height: 44px; }
+  /* Tap targets: keep icon button matched to compact buttons */
+  .btn-icon { min-width: 36px; min-height: 36px; }
 
   /* Stop horizontal overflow on tables */
   .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }

@@ -3,12 +3,17 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  Check, ChevronDown, ChevronRight, Copy, Download, Layers, Link2, Receipt, Send,
-  Share2, Sparkles, Trash2, Wallet, X
+  AlertTriangle, Check, ChevronDown, ChevronRight, Copy, Download, Layers, Link2,
+  Loader2, Receipt, Send, Share2, Sparkles, Trash2, Wallet, X
 } from 'lucide-react';
+import { parseUnits } from 'viem';
+import { useAccount, useWriteContract } from 'wagmi';
+import { usePrivy } from '@privy-io/react-auth';
 import { useSlip } from './SlipContext';
 import { formatUSD } from '@/lib/format';
 import { encodeSlip } from '@/lib/slip-share';
+import { ADDRESSES, ERC20_ABI, PREDICTION_MARKET_ABI, USDC_DECIMALS } from '@/lib/contracts';
+import { recordTradeHistory } from '@/lib/platform/client';
 
 export function SlipFab() {
   const { legs, isOpen, toggle, combinedOdds } = useSlip();
@@ -68,6 +73,91 @@ export function SlipDrawer() {
   const [showShareModal, setShowShareModal] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [copiedKind, setCopiedKind] = useState<'code' | 'link' | null>(null);
+
+  /* ---------------- placement state ---------------- */
+  const { address, isConnected } = useAccount();
+  const { authenticated, login, ready } = usePrivy();
+  const { writeContractAsync } = useWriteContract();
+  const [placeStatus, setPlaceStatus] = useState<'idle' | 'placing' | 'success' | 'error'>('idle');
+  const [placeError, setPlaceError] = useState('');
+  const [placeStep, setPlaceStep] = useState(0);
+
+  const handlePlaceParlay = async () => {
+    setPlaceError('');
+
+    if (!ready) return;
+
+    if (!authenticated || !isConnected || !address) {
+      login();
+      return;
+    }
+
+    if (legs.length === 0) {
+      setPlaceError('Add at least one leg first.');
+      return;
+    }
+
+    if (stake <= 0) {
+      setPlaceError('Set a stake greater than zero.');
+      return;
+    }
+
+    const validLegs = legs.filter((l) => /^0x[a-fA-F0-9]{40}$/.test(l.id));
+    if (validLegs.length === 0) {
+      setPlaceError('Slip contains demo-only markets. Open a live market to bet.');
+      return;
+    }
+
+    const perLeg = stake / validLegs.length;
+    const amountWei = parseUnits(perLeg.toFixed(6), USDC_DECIMALS);
+
+    setPlaceStatus('placing');
+    setPlaceStep(0);
+
+    try {
+      for (let i = 0; i < validLegs.length; i++) {
+        const leg = validLegs[i];
+        const marketAddress = leg.id as `0x${string}`;
+        setPlaceStep(i + 1);
+
+        await writeContractAsync({
+          address: ADDRESSES.USDC,
+          abi: ERC20_ABI,
+          functionName: 'approve',
+          args: [marketAddress, amountWei]
+        });
+
+        const hash = await writeContractAsync({
+          address: marketAddress,
+          abi: PREDICTION_MARKET_ABI,
+          functionName: 'buy',
+          args: [leg.side === 'yes' ? 0 : 1, amountWei, 0n]
+        });
+
+        recordTradeHistory({
+          wallet: address,
+          marketAddress,
+          marketTitle: leg.title,
+          category: leg.category,
+          side: leg.side,
+          collateral: perLeg,
+          hash
+        }).catch(() => {});
+      }
+
+      setPlaceStatus('success');
+      setTimeout(() => {
+        clear();
+        close();
+        setPlaceStatus('idle');
+        setPlaceStep(0);
+      }, 1600);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Transaction failed.';
+      setPlaceError(msg.split('\n')[0].slice(0, 140));
+      setPlaceStatus('error');
+    }
+  };
 
   useEffect(() => {
     if (!isOpen) return;
@@ -374,21 +464,80 @@ export function SlipDrawer() {
                 </AnimatePresence>
 
                 <button
+                  type="button"
                   className="btn btn-primary btn-lg"
                   style={{ width: '100%', height: 52, fontSize: 15 }}
+                  onClick={handlePlaceParlay}
+                  disabled={
+                    !ready ||
+                    placeStatus === 'placing' ||
+                    placeStatus === 'success' ||
+                    (authenticated && isConnected && stake <= 0)
+                  }
                 >
-                  <Wallet size={16} />
-                  Place parlay · {formatUSD(stake)}
-                  <ChevronRight size={14} />
+                  {placeStatus === 'placing' ? (
+                    <>
+                      <Loader2 size={16} className="spin" />
+                      Placing leg {placeStep} of {legs.length}…
+                    </>
+                  ) : placeStatus === 'success' ? (
+                    <>
+                      <Check size={16} />
+                      Parlay placed
+                    </>
+                  ) : !authenticated || !isConnected ? (
+                    <>
+                      <Wallet size={16} />
+                      Connect wallet to place
+                    </>
+                  ) : (
+                    <>
+                      <Wallet size={16} />
+                      Place parlay · {formatUSD(stake)}
+                      <ChevronRight size={14} />
+                    </>
+                  )}
                 </button>
 
-                <div
-                  className="row gap-2"
-                  style={{ justifyContent: 'center', color: 'var(--text-muted)', fontSize: 12 }}
-                >
-                  <Sparkles size={12} color="var(--accent-bright)" />
-                  <span>One transaction · all legs must hit · ≈ $0.001 gas</span>
-                </div>
+                {placeError && (
+                  <div
+                    className="row gap-2"
+                    style={{
+                      padding: '10px 12px',
+                      borderRadius: 'var(--r-md)',
+                      background: 'rgba(255, 77, 109, 0.08)',
+                      border: '1px solid rgba(255, 77, 109, 0.35)',
+                      color: 'var(--negative)',
+                      fontSize: 12,
+                      lineHeight: 1.4
+                    }}
+                  >
+                    <AlertTriangle size={13} />
+                    <span>{placeError}</span>
+                  </div>
+                )}
+
+                {!authenticated || !isConnected ? (
+                  <div
+                    className="row gap-2"
+                    style={{ justifyContent: 'center', color: 'var(--text-muted)', fontSize: 12 }}
+                  >
+                    <Wallet size={12} color="var(--accent-bright)" />
+                    <span>Wallet required to settle onchain.</span>
+                  </div>
+                ) : (
+                  <div
+                    className="row gap-2"
+                    style={{ justifyContent: 'center', color: 'var(--text-muted)', fontSize: 12 }}
+                  >
+                    <Sparkles size={12} color="var(--accent-bright)" />
+                    <span>
+                      {legs.length > 1
+                        ? `${legs.length} legs · stake split evenly · ≈ $0.001 gas`
+                        : 'One transaction · ≈ $0.001 gas'}
+                    </span>
+                  </div>
+                )}
               </div>
             )}
 

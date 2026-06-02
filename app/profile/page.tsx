@@ -2,9 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
+import { motion } from 'framer-motion';
 import { useAccount, useWriteContract } from 'wagmi';
 import {
-  Wallet, ArrowUpRight, BadgeCheck, Loader2, Settings
+  ArrowUpRight, BadgeCheck, Loader2, Settings,
+  LineChart, ShieldCheck, Coins
 } from 'lucide-react';
 import { formatAddress, formatUSD, timeAgo } from '@/lib/format';
 import { ConnectButton } from '@/components/wallet/ConnectButton';
@@ -352,15 +355,195 @@ function EmptyTab({ message, cta }: { message: string; cta?: { href: string; lab
 }
 
 function Disconnected() {
+  const perks = [
+    { Icon: LineChart,   label: 'Live P&L'   },
+    { Icon: Coins,       label: 'Claim wins' },
+    { Icon: ShieldCheck, label: 'Onchain'    }
+  ];
+
   return (
-    <section className="section" style={{ paddingTop: 'calc(var(--nav-h) + var(--s-16))' }}>
-      <div className="container" style={{ maxWidth: 520 }}>
-        <div className="card card-glow" style={{ padding: 'var(--s-10)', textAlign: 'center' }}>
-          <Wallet size={40} style={{ margin: '0 auto var(--s-4)', color: 'var(--accent-bright)' }} />
-          <h1 style={{ fontSize: '1.75rem', marginBottom: 'var(--s-3)' }}>Connect a wallet to view your profile.</h1>
-          <ConnectButton />
+    <section
+      style={{
+        minHeight: 'calc(100vh - var(--nav-h))',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 'var(--s-8) var(--s-4)',
+        position: 'relative',
+        overflow: 'hidden'
+      }}
+    >
+      <div
+        aria-hidden
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background:
+            'radial-gradient(520px 320px at 50% 20%, rgba(124,58,237,0.22), transparent 70%),' +
+            'radial-gradient(420px 280px at 80% 90%, rgba(0,255,135,0.08), transparent 70%)',
+          pointerEvents: 'none'
+        }}
+      />
+
+      <motion.div
+        initial={{ opacity: 0, y: 20, scale: 0.96 }}
+        animate={{ opacity: 1, y: 0,  scale: 1 }}
+        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+        style={{
+          position: 'relative',
+          width: '100%',
+          maxWidth: 400,
+          padding: 1,
+          borderRadius: 22,
+          background:
+            'linear-gradient(140deg, rgba(124,58,237,0.55), rgba(124,58,237,0.05) 35%, rgba(255,255,255,0.06) 65%, rgba(124,58,237,0.4))',
+          boxShadow: '0 30px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(124,58,237,0.10)'
+        }}
+      >
+        <div
+          style={{
+            borderRadius: 21,
+            background: 'rgba(12, 12, 20, 0.92)',
+            backdropFilter: 'blur(18px) saturate(140%)',
+            padding: 'var(--s-8) var(--s-6) var(--s-6)',
+            textAlign: 'center',
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+        >
+          <div
+            style={{
+              position: 'relative',
+              width: 84,
+              height: 84,
+              margin: '0 auto var(--s-5)'
+            }}
+          >
+            <motion.div
+              aria-hidden
+              animate={{ rotate: 360 }}
+              transition={{ duration: 9, repeat: Infinity, ease: 'linear' }}
+              style={{
+                position: 'absolute',
+                inset: 0,
+                borderRadius: '50%',
+                background:
+                  'conic-gradient(from 0deg, rgba(124,58,237,0.95), rgba(124,58,237,0) 35%, rgba(94,234,212,0.7) 60%, rgba(124,58,237,0) 85%, rgba(124,58,237,0.95))',
+                filter: 'blur(0.5px)'
+              }}
+            />
+            <div
+              style={{
+                position: 'absolute',
+                inset: 2,
+                borderRadius: '50%',
+                background: 'rgba(12,12,20,0.95)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <Image
+                src="/logo.png"
+                alt="XPredict"
+                width={42}
+                height={42}
+                style={{ borderRadius: 10 }}
+              />
+            </div>
+            <motion.span
+              aria-hidden
+              animate={{ scale: [1, 1.18, 1], opacity: [0.7, 0.2, 0.7] }}
+              transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+              style={{
+                position: 'absolute',
+                top: 4,
+                right: 4,
+                width: 10,
+                height: 10,
+                borderRadius: '50%',
+                background: 'var(--positive)',
+                boxShadow: '0 0 12px var(--positive)'
+              }}
+            />
+          </div>
+
+          <div
+            className="mono"
+            style={{
+              fontSize: 11,
+              letterSpacing: '0.18em',
+              textTransform: 'uppercase',
+              color: 'var(--accent-bright)',
+              marginBottom: 8
+            }}
+          >
+            Your arena, your wallet
+          </div>
+
+          <h2
+            style={{
+              fontSize: '1.45rem',
+              letterSpacing: '-0.02em',
+              lineHeight: 1.2,
+              marginBottom: 'var(--s-2)'
+            }}
+          >
+            <span className="gradient-text">Connect</span> to enter
+          </h2>
+          <p
+            style={{
+              fontSize: 13,
+              color: 'var(--text-muted)',
+              lineHeight: 1.5,
+              maxWidth: 300,
+              margin: '0 auto var(--s-6)'
+            }}
+          >
+            Predictions, P&amp;L, claims, and following all sync to your wallet on X Layer.
+          </p>
+
+          <div
+            className="row gap-2"
+            style={{ justifyContent: 'center', flexWrap: 'wrap', marginBottom: 'var(--s-6)' }}
+          >
+            {perks.map(({ Icon, label }) => (
+              <span
+                key={label}
+                className="row gap-2"
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: 99,
+                  border: '1px solid var(--border-strong)',
+                  background: 'rgba(255,255,255,0.025)',
+                  fontSize: 12,
+                  color: 'var(--text-dim)'
+                }}
+              >
+                <Icon size={12} color="var(--accent-bright)" />
+                {label}
+              </span>
+            ))}
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <ConnectButton />
+          </div>
+
+          <div
+            className="mono"
+            style={{
+              marginTop: 'var(--s-5)',
+              fontSize: 10,
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              color: 'var(--text-faint)'
+            }}
+          >
+            Powered by Privy · X Layer zkEVM
+          </div>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }

@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
       {
         agent,
         apiKey: apiKey.key,
-        message: 'Store apiKey securely — it is shown only once.'
+        message: 'Store apiKey securely. It is shown only once.'
       },
       201
     );

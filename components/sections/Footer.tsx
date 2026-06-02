@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 const COLS = [
   {
@@ -37,7 +38,7 @@ export function Footer() {
         <div className="footer-grid">
           <div className="stack-4">
             <div className="row gap-2">
-              <Mark />
+              <Image src="/logo.png" alt="XPredict" width={22} height={22} style={{ borderRadius: 6 }} />
               <strong style={{ letterSpacing: '-0.02em' }}>XPredict</strong>
             </div>
             <p style={{ color: 'var(--text-muted)', fontSize: 14, maxWidth: 320 }}>
@@ -106,18 +107,3 @@ export function Footer() {
   );
 }
 
-function Mark() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 32 32" aria-hidden>
-      <defs>
-        <linearGradient id="flg" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#8B5CF6" />
-          <stop offset="1" stopColor="#7C3AED" />
-        </linearGradient>
-      </defs>
-      <rect width="32" height="32" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.10)" />
-      <path d="M9 9 L16 17 L23 9" stroke="url(#flg)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-      <path d="M9 17 L16 25 L23 17" stroke="#FFFFFF" strokeOpacity="0.95" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-    </svg>
-  );
-}

@@ -308,7 +308,7 @@ function SettingsPageInner() {
                     <ThemeOption
                       icon={Sun}
                       title="Light Mode"
-                      description="Bright and clean — coming soon"
+                      description="Bright and clean. Coming soon"
                       active={theme === 'light'}
                       onClick={() => handleThemeChange('light')}
                       disabled

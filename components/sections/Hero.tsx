@@ -1,8 +1,11 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import gsap from 'gsap';
 import { ArrowRight, Sparkles, Zap } from 'lucide-react';
 import { HERO_STATS } from '@/lib/data';
+import { Typewriter } from '@/components/ui/Typewriter';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -15,6 +18,52 @@ const stagger = {
 };
 
 export function Hero() {
+  const headlineRef = useRef<HTMLHeadingElement>(null);
+  const auroraRef = useRef<HTMLDivElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!headlineRef.current) return;
+
+    const ctx = gsap.context(() => {
+      // Word-by-word headline reveal
+      const words = headlineRef.current!.querySelectorAll<HTMLElement>('[data-word]');
+      gsap.from(words, {
+        yPercent: 110,
+        opacity: 0,
+        rotate: 3,
+        duration: 0.9,
+        ease: 'expo.out',
+        stagger: 0.06,
+        delay: 0.15
+      });
+
+      // Floating preview card
+      if (previewRef.current) {
+        gsap.to(previewRef.current, {
+          y: -10,
+          duration: 3.4,
+          ease: 'sine.inOut',
+          repeat: -1,
+          yoyo: true
+        });
+      }
+
+      // Aurora drift
+      if (auroraRef.current) {
+        gsap.to(auroraRef.current, {
+          backgroundPosition: '40% 60%, 60% 40%',
+          duration: 14,
+          ease: 'sine.inOut',
+          repeat: -1,
+          yoyo: true
+        });
+      }
+    });
+
+    return () => ctx.revert();
+  }, []);
+
   return (
     <section
       style={{
@@ -31,14 +80,17 @@ export function Hero() {
     >
       {/* Hero-local aurora */}
       <div
+        ref={auroraRef}
         aria-hidden
         style={{
           position: 'absolute',
           inset: 0,
           pointerEvents: 'none',
-          background:
+          backgroundImage:
             'radial-gradient(680px 460px at 18% 38%, rgba(124, 58, 237, 0.28), transparent 60%),' +
-            'radial-gradient(540px 360px at 82% 70%, rgba(0, 255, 135, 0.10), transparent 60%)'
+            'radial-gradient(540px 360px at 82% 70%, rgba(0, 255, 135, 0.10), transparent 60%)',
+          backgroundPosition: '18% 38%, 82% 70%',
+          backgroundRepeat: 'no-repeat'
         }}
       />
 
@@ -61,10 +113,30 @@ export function Hero() {
               Built on X Layer · Agents v1 live
             </motion.span>
 
-            <motion.h1 variants={fadeUp}>
-              <span className="gradient-text">Predict anything.</span>
-              <br />
-              Settled by agents.
+            <motion.h1 variants={fadeUp} ref={headlineRef} style={{ overflow: 'hidden' }}>
+              <span style={{ display: 'block', overflow: 'hidden' }}>
+                {'Predict anything.'.split(' ').map((w, i) => (
+                  <span
+                    key={`p-${i}`}
+                    data-word
+                    className="gradient-text"
+                    style={{ display: 'inline-block', marginRight: '0.25em', willChange: 'transform' }}
+                  >
+                    {w}
+                  </span>
+                ))}
+              </span>
+              <span style={{ display: 'block', overflow: 'hidden' }}>
+                {'Settled by agents.'.split(' ').map((w, i) => (
+                  <span
+                    key={`s-${i}`}
+                    data-word
+                    style={{ display: 'inline-block', marginRight: '0.25em', willChange: 'transform' }}
+                  >
+                    {w}
+                  </span>
+                ))}
+              </span>
             </motion.h1>
 
             <motion.p
@@ -87,22 +159,35 @@ export function Hero() {
               </a>
             </motion.div>
 
-            <motion.div variants={fadeUp} className="row gap-6 hero-trust-row" style={{ marginTop: 8 }}>
-              <Trust label="X Layer zkEVM" />
-              <Dot />
-              <Trust label="USDC settlement" />
-              <Dot />
-              <Trust label="Open agent SDK" />
+            <motion.div variants={fadeUp} className="row gap-3 hero-trust-row" style={{ marginTop: 8, minHeight: 22 }}>
+              <span
+                aria-hidden
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: 99,
+                  background: 'var(--accent-bright)',
+                  boxShadow: '0 0 12px var(--accent-bright)'
+                }}
+              />
+              <Typewriter
+                phrases={['X Layer zkEVM', 'USDC settlement', 'Open agent SDK', 'Agent-resolved markets']}
+                style={{ color: 'var(--text-muted)', fontSize: 13, letterSpacing: '-0.005em' }}
+              />
             </motion.div>
           </div>
 
           {/* Right: live agent / market preview */}
-          <motion.div variants={fadeUp} style={{ position: 'relative', minWidth: 0, maxWidth: '100%' }}>
+          <motion.div
+            variants={fadeUp}
+            ref={previewRef}
+            style={{ position: 'relative', minWidth: 0, maxWidth: '100%', willChange: 'transform' }}
+          >
             <AgentPreview />
           </motion.div>
         </motion.div>
 
-        {/* Stat strip */}
+        {/* Stat strip — desktop: 4-up row, mobile: rotating single card */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -118,7 +203,7 @@ export function Hero() {
             backdropFilter: 'blur(10px)',
             overflow: 'hidden'
           }}
-          className="hero-stats"
+          className="hero-stats hero-stats-desktop"
         >
           {HERO_STATS.map((s, i) => (
             <div
@@ -141,21 +226,20 @@ export function Hero() {
             </div>
           ))}
         </motion.div>
+
+        <HeroStatsRotator />
       </div>
 
       <style>{`
+        .hero-stats-mobile { display: none; }
         @media (max-width: 1024px) {
           .hero-grid { grid-template-columns: 1fr !important; }
         }
         @media (max-width: 768px) {
-          .hero-stats { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
-          .hero-stats > div:nth-child(3) { border-left: none !important; border-top: 1px solid var(--border); }
-          .hero-stats > div:nth-child(4) { border-top: 1px solid var(--border); }
+          .hero-stats-desktop { display: none !important; }
+          .hero-stats-mobile { display: block !important; }
         }
         @media (max-width: 560px) {
-          .hero-stats { grid-template-columns: 1fr !important; }
-          .hero-stats > div { border-left: none !important; }
-          .hero-stats > div + div { border-top: 1px solid var(--border); }
           .hero-cta-row { flex-direction: column; width: 100%; }
           .hero-cta-row .btn { width: 100%; justify-content: center; }
         }
@@ -164,21 +248,85 @@ export function Hero() {
   );
 }
 
-function Trust({ label }: { label: string }) {
-  return (
-    <span style={{ color: 'var(--text-muted)', fontSize: 13, letterSpacing: '-0.005em' }}>
-      {label}
-    </span>
-  );
-}
+/* -------------------- Mobile rotating stats -------------------- */
 
-function Dot() {
+function HeroStatsRotator() {
+  const [idx, setIdx] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setIdx((i) => (i + 1) % HERO_STATS.length);
+    }, 2500);
+    return () => clearInterval(id);
+  }, []);
+
+  const stat = HERO_STATS[idx];
+
   return (
-    <span
-      aria-hidden
-      className="trust-dot"
-      style={{ width: 3, height: 3, borderRadius: 99, background: 'var(--border-strong)' }}
-    />
+    <div
+      className="hero-stats-mobile"
+      style={{
+        marginTop: 'var(--s-12)',
+        border: '1px solid var(--border)',
+        borderRadius: 'var(--r-lg)',
+        background: 'rgba(17, 17, 24, 0.55)',
+        backdropFilter: 'blur(10px)',
+        overflow: 'hidden',
+        position: 'relative'
+      }}
+    >
+      <div style={{ padding: 'var(--s-6)', minHeight: 120, position: 'relative' }}>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={stat.label}
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -14 }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div
+              className="mono"
+              style={{ fontSize: 11, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.12em' }}
+            >
+              {stat.label}
+            </div>
+            <div style={{ fontSize: 32, fontWeight: 700, letterSpacing: '-0.025em', marginTop: 6 }}>
+              {stat.value}
+            </div>
+            <div style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 2 }}>{stat.sub}</div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* Progress dots */}
+      <div
+        className="row gap-2"
+        style={{
+          justifyContent: 'center',
+          padding: '10px 0 14px',
+          borderTop: '1px solid var(--border)'
+        }}
+      >
+        {HERO_STATS.map((s, i) => (
+          <button
+            key={s.label}
+            onClick={() => setIdx(i)}
+            aria-label={`Show ${s.label}`}
+            style={{
+              width: i === idx ? 18 : 6,
+              height: 6,
+              borderRadius: 99,
+              background: i === idx ? 'var(--accent-bright)' : 'var(--border-strong)',
+              boxShadow: i === idx ? '0 0 8px var(--accent-bright)' : 'none',
+              transition: 'width 280ms ease, background 280ms ease',
+              border: 'none',
+              padding: 0,
+              cursor: 'pointer'
+            }}
+          />
+        ))}
+      </div>
+    </div>
   );
 }
 

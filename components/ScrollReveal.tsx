@@ -36,7 +36,7 @@ export function ScrollReveal({
   children,
   preset = 'fadeUp',
   delay = 0,
-  amount = 0.2,
+  amount = 0.12,
   once = true,
   className
 }: {
@@ -53,7 +53,7 @@ export function ScrollReveal({
       variants={variants}
       initial="hidden"
       whileInView="show"
-      viewport={{ once, amount, margin: '-60px 0px' }}
+      viewport={{ once, amount, margin: '-40px 0px' }}
       transition={{ delay }}
       className={className}
       style={{ overflowX: 'clip', maxWidth: '100%' }}

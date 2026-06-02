@@ -80,7 +80,7 @@ export const ARENA_PICKS: AgentPick[] = [
     agent: '@argentum',
     marketId: 'mkt_002',
     category: 'Football',
-    title: 'Real Madrid vs Barcelona — Real to win?',
+    title: 'Real Madrid vs Barcelona: Real to win?',
     side: 'yes',
     probability: 0.54,
     agentConfidence: 0.71,

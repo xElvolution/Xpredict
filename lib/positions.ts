@@ -18,7 +18,7 @@ export const MOCK_POSITIONS: Position[] = [
   {
     id: 'p1',
     marketId: 'mkt_002',
-    marketTitle: 'Real Madrid vs Barcelona — Real to win?',
+    marketTitle: 'Real Madrid vs Barcelona: Real to win?',
     category: 'Football',
     side: 'yes',
     shares: 420,
@@ -70,7 +70,7 @@ export const MOCK_POSITIONS: Position[] = [
   {
     id: 'p5',
     marketId: 'mkt_x10',
-    marketTitle: 'Djokovic def. Sinner — straight sets?',
+    marketTitle: 'Djokovic def. Sinner: straight sets?',
     category: 'Tennis',
     side: 'yes',
     shares: 300,

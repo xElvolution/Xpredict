@@ -65,8 +65,8 @@ export function MarketInfoPanels({
       </Panel>
       <Panel title="Trading modes">
         <p style={{ fontSize: 14, color: 'var(--text-dim)', lineHeight: 1.6 }}>
-          <strong>AMM</strong> — instant execution against the on-chain pool.<br />
-          <strong>CLOB</strong> — post limit orders; matched orders appear in your profile and trade history.
+          <strong>AMM</strong>: instant execution against the on-chain pool.<br />
+          <strong>CLOB</strong>: post limit orders; matched orders appear in your profile and trade history.
         </p>
       </Panel>
       <Panel title="World Cup / match context">

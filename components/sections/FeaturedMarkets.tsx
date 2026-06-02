@@ -9,8 +9,13 @@ import { formatUSD, formatNumber, timeUntil } from '@/lib/format';
 import { SlipAddButton } from '@/components/slip/SlipAddButton';
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 18 },
-  show:   (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.05 } })
+  hidden: { opacity: 0, y: 36, scale: 0.97 },
+  show:   (i: number) => ({
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { delay: i * 0.08, duration: 0.65, ease: [0.22, 1, 0.36, 1] }
+  })
 };
 
 export function FeaturedMarkets() {
@@ -57,7 +62,7 @@ export function FeaturedMarkets() {
               color: 'var(--text-muted)', fontSize: 14
             }}
           >
-            No live markets yet — the Curator agent is drafting some now. Check back in a few minutes.
+            No live markets yet. The Curator agent is drafting some now, check back in a few minutes.
           </div>
         ) : (
           <div
@@ -75,7 +80,8 @@ export function FeaturedMarkets() {
                 variants={fadeUp}
                 initial="hidden"
                 whileInView="show"
-                viewport={{ once: true, margin: '-80px' }}
+                whileHover={{ y: -6, transition: { duration: 0.25 } }}
+                viewport={{ once: true, margin: '-40px' }}
               >
                 <MarketCard market={m} />
               </motion.div>

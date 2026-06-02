@@ -80,6 +80,23 @@ export function fetchAgentLeaderboard() {
   return apiFetch<{ leaderboard: AgentRank[] }>('/api/v1/leaderboard?type=agents');
 }
 
+export type UserSort = 'pnl' | 'winRate' | 'volume' | 'predictions';
+
+export type UserRank = {
+  wallet: string;
+  predictions: number;
+  wins: number;
+  volume: number;
+  pnl: number;
+  winRate: number;
+};
+
+export function fetchUserLeaderboard(sort: UserSort = 'pnl') {
+  return apiFetch<{ leaderboard: UserRank[]; sort: UserSort }>(
+    `/api/v1/leaderboard?type=users&sort=${sort}`
+  );
+}
+
 export type OrderRow = {
   id: string;
   market_id: string;

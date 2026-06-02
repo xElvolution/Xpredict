@@ -1,3 +1,6 @@
+'use client';
+
+import { motion } from 'framer-motion';
 import { Bot, Coins, ShieldCheck } from 'lucide-react';
 
 const STEPS = [
@@ -37,7 +40,14 @@ export function HowItWorks() {
           </p>
         </div>
 
-        <div
+        <motion.div
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.15, margin: '-40px 0px' }}
+          variants={{
+            hidden: {},
+            show: { transition: { staggerChildren: 0.12, delayChildren: 0.05 } }
+          }}
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
@@ -46,7 +56,15 @@ export function HowItWorks() {
           className="hiw-grid"
         >
           {STEPS.map(({ n, Icon, title, body }) => (
-            <div key={n} className="card card-glow">
+            <motion.div
+              key={n}
+              className="card card-glow"
+              variants={{
+                hidden: { opacity: 0, y: 36 },
+                show:   { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] } }
+              }}
+              whileHover={{ y: -6, transition: { duration: 0.25 } }}
+            >
               <div className="row" style={{ justifyContent: 'space-between', marginBottom: 'var(--s-6)' }}>
                 <div
                   style={{
@@ -74,9 +92,9 @@ export function HowItWorks() {
                 {title}
               </h3>
               <p style={{ fontSize: 15, color: 'var(--text-dim)' }}>{body}</p>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
 
       <style>{`

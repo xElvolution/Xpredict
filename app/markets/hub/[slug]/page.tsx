@@ -10,7 +10,7 @@ import { useMarkets } from '@/lib/use-markets';
 const HUBS: Record<string, { title: string; subtitle: string; filter: (m: { title: string; subtitle: string; category: string }) => boolean }> = {
   football: {
     title: 'Football',
-    subtitle: 'Leagues, cups, and international fixtures — including UCL and World Cup build-up.',
+    subtitle: 'Leagues, cups, and international fixtures, including UCL and World Cup build-up.',
     filter: (m) => m.category === 'Football'
   },
   'world-cup': {

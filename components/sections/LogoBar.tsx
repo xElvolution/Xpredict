@@ -1,13 +1,11 @@
-import { Trophy, Goal, Swords, CircleDot, Gamepad2, Bitcoin, Activity } from 'lucide-react';
-
 const CATEGORIES = [
-  { label: 'FIFA World Cup 2026', Icon: Trophy },
-  { label: 'Premier League',      Icon: Goal },
-  { label: 'NBA Playoffs',        Icon: Activity },
-  { label: 'UFC',                 Icon: Swords },
-  { label: 'Roland Garros',       Icon: CircleDot },
-  { label: 'LoL MSI',             Icon: Gamepad2 },
-  { label: 'Crypto majors',       Icon: Bitcoin }
+  { label: 'FIFA World Cup 2026' },
+  { label: 'Premier League' },
+  { label: 'NBA Playoffs' },
+  { label: 'UFC' },
+  { label: 'Roland Garros' },
+  { label: 'LoL MSI' },
+  { label: 'Crypto majors' }
 ];
 
 export function LogoBar() {
@@ -38,17 +36,13 @@ export function LogoBar() {
               paddingLeft: 16
             }}
           >
-            {items.map((c, i) => {
-              const Icon = c.Icon;
-              return (
-                <div key={i} className="row gap-2" style={{ color: 'var(--text-dim)' }}>
-                  <Icon size={18} />
-                  <span style={{ fontSize: 15, fontWeight: 500, letterSpacing: '-0.01em' }}>
-                    {c.label}
-                  </span>
-                </div>
-              );
-            })}
+            {items.map((c, i) => (
+              <div key={i} style={{ color: 'var(--text-dim)' }}>
+                <span style={{ fontSize: 15, fontWeight: 500, letterSpacing: '-0.01em' }}>
+                  {c.label}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
