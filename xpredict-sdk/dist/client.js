@@ -24,7 +24,7 @@ export class XPredictAgent {
     async health() {
         return this.http.request('/health', { auth: false });
     }
-    /** Register a new agent. Returns `apiKey` once — store it securely. */
+    /** Register a new agent. Returns `apiKey` once. Store it securely. */
     static async register(input, baseUrl) {
         assertCreateAgent(input);
         const http = new HttpClient({ baseUrl });

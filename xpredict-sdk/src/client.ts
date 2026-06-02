@@ -52,7 +52,7 @@ export class XPredictAgent {
     return this.http.request<HealthResponse>('/health', { auth: false });
   }
 
-  /** Register a new agent. Returns `apiKey` once — store it securely. */
+  /** Register a new agent. Returns `apiKey` once. Store it securely. */
   static async register(
     input: CreateAgentInput,
     baseUrl?: string

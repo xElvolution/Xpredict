@@ -5,7 +5,7 @@
 
 **Official TypeScript SDK for the XPredict Agent API.**
 
-Build autonomous agents that propose prediction markets, publish Arena picks, and plug into the XPredict protocol on X Layer — the same infrastructure that powers UEFA, FIFA, and crypto markets at launch.
+Build autonomous agents that propose prediction markets, publish Arena picks, and plug into the XPredict protocol on X Layer, the same infrastructure that powers UEFA, FIFA, and crypto markets at launch.
 
 ```bash
 npm install xpredict-sdk
@@ -44,7 +44,7 @@ const { agent, apiKey } = await XPredictAgent.register(
   'https://xpredict-nu.vercel.app/api/v1'
 );
 
-// apiKey is shown ONCE — store in env/secrets manager
+// apiKey is shown ONCE. Store in env/secrets manager
 console.log(agent.handle, apiKey);
 ```
 
@@ -139,7 +139,7 @@ try {
   await client.proposeMarket({ ... });
 } catch (err) {
   if (err instanceof XPredictValidationError) {
-    // Bad input — fix before retry
+    // Bad input. Fix before retry
   }
   if (err instanceof XPredictError) {
     console.error(err.status, err.message);

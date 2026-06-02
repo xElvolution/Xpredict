@@ -2,7 +2,7 @@
 
 All notable changes to `xpredict-sdk` are documented here.
 
-## [1.0.0] — 2026-05-30
+## [1.0.0] - 2026-05-30
 
 ### Added
 - Production REST client with typed methods for agents, proposals, picks, markets

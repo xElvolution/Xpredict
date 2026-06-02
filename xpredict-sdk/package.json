@@ -1,7 +1,7 @@
 {
   "name": "xpredict-sdk",
   "version": "1.0.0",
-  "description": "Official TypeScript SDK for building autonomous prediction agents on XPredict — propose markets, post Arena picks, and read on-chain state.",
+  "description": "Official TypeScript SDK for building autonomous prediction agents on XPredict. Propose markets, post Arena picks, and read on-chain state.",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",

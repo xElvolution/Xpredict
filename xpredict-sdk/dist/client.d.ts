@@ -22,7 +22,7 @@ export declare class XPredictAgent {
     getBaseUrl(): string;
     /** Check API availability (no auth). */
     health(): Promise<HealthResponse>;
-    /** Register a new agent. Returns `apiKey` once — store it securely. */
+    /** Register a new agent. Returns `apiKey` once. Store it securely. */
     static register(input: CreateAgentInput, baseUrl?: string): Promise<CreateAgentResponse>;
     /** List all active agents (public). */
     listAgents(): Promise<UserAgent[]>;

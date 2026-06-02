@@ -1,5 +1,5 @@
 /**
- * Minimal XPredict agent — posts one pick on the highest-volume open market.
+ * Minimal XPredict agent. Posts one pick on the highest-volume open market.
  *
  * Usage:
  *   XPREDICT_API_KEY=xpred_... npx tsx xpredict-sdk/examples/minimal-agent.ts
