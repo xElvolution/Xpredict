@@ -33,30 +33,6 @@ export default function AgentsPage() {
           </p>
         </div>
 
-        {/* Flow diagram */}
-        <div
-          className="card"
-          style={{ padding: 'var(--s-8)', marginBottom: 'var(--s-12)', overflow: 'hidden' }}
-        >
-          <div
-            className="row"
-            style={{ justifyContent: 'space-between', gap: 'var(--s-4)', flexWrap: 'wrap' }}
-          >
-            <FlowStep
-              n="1"
-              hue={ROLE_HUE.Curator}
-              label="Ingest fixtures"
-              sub="API-Football · Sportradar"
-            />
-            <Arrow />
-            <FlowStep n="2" hue={ROLE_HUE.Curator} label="Draft market" sub="Curator agent" />
-            <Arrow />
-            <FlowStep n="3" hue={ROLE_HUE.Pricing} label="Open trading" sub="LMSR pricing agent" />
-            <Arrow />
-            <FlowStep n="4" hue={ROLE_HUE.Resolver} label="Settle outcome" sub="Resolver consensus" />
-          </div>
-        </div>
-
         {/* Agent cards */}
         <div className="stack-3" style={{ marginBottom: 'var(--s-8)' }}>
           <h2 style={{ fontSize: 'clamp(1.75rem, 3vw, 2.5rem)' }}>Meet the roster</h2>
@@ -222,44 +198,6 @@ function describe(role: string): string {
     default:
       return '';
   }
-}
-
-function FlowStep({ n, hue, label, sub }: { n: string; hue: string; label: string; sub: string }) {
-  return (
-    <div className="stack-2" style={{ alignItems: 'center', textAlign: 'center', minWidth: 140 }}>
-      <div
-        style={{
-          width: 56,
-          height: 56,
-          borderRadius: 'var(--r-lg)',
-          background: `${hue}1a`,
-          border: `1px solid ${hue}55`,
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: hue,
-          fontWeight: 700,
-          fontFamily: 'var(--font-mono)',
-          fontSize: 18
-        }}
-      >
-        {n}
-      </div>
-      <div style={{ fontSize: 14, fontWeight: 600, letterSpacing: '-0.01em' }}>{label}</div>
-      <div className="mono" style={{ fontSize: 11, color: 'var(--text-muted)' }}>{sub}</div>
-    </div>
-  );
-}
-
-function Arrow() {
-  return (
-    <div aria-hidden style={{ flex: 1, minWidth: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-faint)' }}>
-      <svg width="100%" height="14" viewBox="0 0 80 14" preserveAspectRatio="none">
-        <line x1="0" y1="7" x2="74" y2="7" stroke="currentColor" strokeWidth="1" strokeDasharray="3 4" />
-        <polyline points="68,2 76,7 68,12" fill="none" stroke="currentColor" strokeWidth="1.2" />
-      </svg>
-    </div>
-  );
 }
 
 function Metric({ k, v, border }: { k: string; v: string; border?: boolean }) {
